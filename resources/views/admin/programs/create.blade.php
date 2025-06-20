@@ -39,22 +39,22 @@
 
         {{-- مسئولین --}}
         <div>
-        <hr>
-        <h5 class="mb-3">مسئولان اجرایی</h5>
-        <div class="row">
-            @foreach([
-                'leader_name' => 'نام سرپرست',
-                'assistant_leader_name' => 'نام کمک‌سرپرست',
-                'technical_manager_name' => 'نام مسئول فنی',
-                'support_name' => 'نام پشتیبان',
-                'guide_name' => 'نام راهنما'
-            ] as $field => $label)
-                <div class="col-md-6 mb-2">
-                    <label>{{ $label }}</label>
-                    <input type="text" name="{{ $field }}" class="form-control">
-                </div>
-            @endforeach
-        </div>
+            <hr>
+            <h5 class="mb-3">مسئولان اجرایی</h5>
+            <div class="row">
+                @foreach([
+                    'leader_name' => 'نام سرپرست',
+                    'assistant_leader_name' => 'نام کمک‌سرپرست',
+                    'technical_manager_name' => 'نام مسئول فنی',
+                    'support_name' => 'نام پشتیبان',
+                    'guide_name' => 'نام راهنما'
+                ] as $field => $label)
+                    <div class="col-md-6 mb-2">
+                        <label>{{ $label }}</label>
+                        <input type="text" name="{{ $field }}" class="form-control">
+                    </div>
+                @endforeach
+            </div>
         </div>
 
         <hr>

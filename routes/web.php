@@ -55,6 +55,7 @@ Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->na
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+Route::get('/sitemap.xml', [App\Http\Controllers\SitemapController::class, 'index']);
 
 //User Dashboard routes:
 Route::prefix('dashboard')->name('dashboard.')->middleware('auth')->group(function () {
@@ -77,8 +78,9 @@ Route::prefix('dashboard')->name('dashboard.')->middleware('auth')->group(functi
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/create', [ReportController::class, 'create'])->name('reports.create');
     Route::get('/reports/edit', [ReportController::class, 'edit'])->name('reports.edit');
+        Route::get('/reports/update', [ReportController::class, 'update'])->name('reports.update');
     Route::get('/reports/show', [ReportController::class, 'show'])->name('reports.show');
-    Route::post('/reports/create', [ReportController::class, 'store'])->name('reports.store');
+    Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
 
 });
 

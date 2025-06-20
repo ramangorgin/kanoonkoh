@@ -30,7 +30,7 @@ class User extends Authenticatable
 
     public function getFullNameAttribute()
     {
-        return trim($this->first_name . ' ' . $this->last_name);
+        return $this->profile->first_name . ' ' . $this->profile->last_name;
     }
 
     protected static function booted()

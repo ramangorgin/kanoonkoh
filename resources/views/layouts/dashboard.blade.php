@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <title>@yield('title', 'داشبورد')</title>
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css" rel="stylesheet" >
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />  
-    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/sahel-font@v3.4.0/dist/font-face.css" rel="stylesheet" type="text/css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css" rel="stylesheet">
-
-
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="stylesheet" href="{{ asset('css/bootstrap.rtl.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/bootstrap-icons.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/persian-datepicker.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/select2.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/leaflet.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/Vazirmatn-font-face.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('css/Sahel-font-face.css') }}" type="text/css">
     @stack('styles')
     <style>
-
         body {
             margin: 0;
             font-family: 'Sahel', sans-serif;
@@ -82,7 +81,8 @@
             font-weight: bold;
             border-radius: 5px;
         }
-        #userpanel{
+
+        #userpanel {
             background-color: #007bff;
             color: #ffffff;
             padding: 20px;
@@ -90,226 +90,180 @@
             font-family: 'Vazirmatn', sans-serif;
             font-weight: 900;
         }
+
+        @media (max-width: 991.98px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                position: fixed;
+                top: 0;
+                right: -260px;
+                width: 250px;
+                height: 100%;
+                z-index: 1050;
+                background-color: #fff;
+                transition: right 0.3s ease;
+                box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+            }
+
+            .sidebar.show {
+                right: 0;
+            }
+
+            .main-content {
+                padding: 20px 15px;
+            }
+
+            .sidebar a {
+                font-size: 0.95rem;
+                padding: 8px 12px;
+            }
+
+            #userpanel {
+                font-size: 1rem;
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            body {
+                font-size: 14px;
+            }
+
+            .navbar-brand img {
+                height: 45px;
+            }
+
+            .nav-link {
+                font-size: 13pt !important;
+            }
+
+            .sidebar {
+                width: 220px;
+            }
+
+            .main-content {
+                padding: 15px;
+            }
+
+            .breadcrumb {
+                padding: 8px 12px;
+                font-size: 0.85rem;
+            }
+        }
     </style>
 </head>
 <body>
 <header>
-            <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm py-3">
-                <div class="container">
-                    {{-- ستون راست (لوگو) --}}
-                    <a class="navbar-brand order-1 order-lg-1" href="{{ route('home') }}">
-                        <img src="{{ asset('images/logo.png') }}" alt="کانون کوه" style="height: 60px;">
-                    </a>
+    <nav class="navbar bg-white shadow-sm py-3 px-4" style="font-family: 'Vazirmatn', sans-serif;">
+        <div class="container-fluid d-flex align-items-center justify-content-between flex-wrap">
 
-                    {{-- ستون وسط (منو اصلی - فقط در لپ‌تاپ) --}}
-                    <div class="d-none d-lg-block order-2 w-100 text-center">
-                        <ul class="navbar-nav justify-content-center flex-row gap-4">
-                            <li class="nav-item"><a class="nav-link" href="{{ route('home') }}" style="font-size: 15pt;">خانه</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{{ route('programs.index') }}" style="font-size: 15pt;">برنامه‌ها</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{{ route('courses.index') }}" style="font-size: 15pt;">دوره‌ها</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{{ route('reports.index') }}" style="font-size: 15pt;">گزارش‌ها</a></li>
-                        </ul>
-                    </div>
+            <!-- لوگو (همیشه سمت راست) -->
+            <a class="navbar-brand d-flex align-items-center order-1" href="{{ route('home') }}">
+                <img src="{{ asset('images/logo.png') }}" alt="کانون کوه" style="height: 65px;">
+            </a>
 
-                    <div class="d-none d-lg-flex order-3 align-items-center gap-3">
-                        {{-- دکمه خروج --}}
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button style="width: 100px;" id="exitButton" type="submit" class="btn btn-outline-danger">
-                                <i class="bi bi-box-arrow-left"></i> خروج
-                            </button>
-                        </form>
-                    </div>
+            <!-- دکمه‌ها (همیشه سمت چپ) -->
+            <div class="d-flex align-items-center gap-3 order-2 ms-auto">
+                <!-- فقط در موبایل: دکمه تاگل سایدبار -->
+                <button class="btn btn-primary d-inline-block d-lg-none" id="sidebarToggle">
+                    <i class="bi bi-list fs-4"></i>
+                </button>
 
-                    {{-- همبرگر موبایل --}}
-                    <button class="navbar-toggler d-lg-none order-2" type="button" data-bs-toggle="offcanvas"
-                            data-bs-target="#mobileMenu" aria-controls="mobileMenu">
-                        <span class="navbar-toggler-icon"></span>
+                <!-- صفحه اصلی سایت -->
+                <a href="{{ url('/') }}" class="btn btn-outline-primary d-none d-lg-inline-flex px-3">
+                    <i class="bi bi-house-door-fill me-1"></i> صفحه اصلی
+                </a>
+
+                <!-- خروج از حساب -->
+                <form method="POST" action="{{ route('logout') }}" class="d-none d-lg-inline">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-danger px-3">
+                        <i class="bi bi-box-arrow-right me-1"></i> خروج
                     </button>
-                </div>
-            </nav>
-
-            {{-- موبایل منو --}}
-            <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileMenu" aria-labelledby="mobileMenuLabel">
-                <div class="offcanvas-header">
-                    <h5 class="offcanvas-title">منو</h5>
-                    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
-                </div>
-                <div class="offcanvas-body">
-                    <ul class="navbar-nav">
-                        <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">خانه</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('programs.index') }}">برنامه‌ها</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('courses.index') }}">دوره‌ها</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('reports.index') }}">گزارش‌ها</a></li>
-                    </ul>
-
-                    <hr>
-
-                     {{-- دکمه خروج در موبایل --}}
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="btn btn-outline-danger w-100">
-                            <i class="bi bi-box-arrow-left"></i> خروج از سیستم
-                        </button>
-                    </form>
-                </div>
+                </form>
             </div>
-        </header>
 
-        
-    <div class="dashboard-container">
-
-        {{-- Sidebar --}}
-        <aside class="sidebar">
-            <h5 class="text-center" id="userpanel" >پنل کاربری</h5>
-            <a href="{{ route('dashboard.index') }}"
-            class="{{ request()->routeIs('dashboard.index') ? 'active-link' : '' }}">
-            🏠 خانه داشبورد
-            </a>
-
-            <a href="{{ route('dashboard.profile') }}"
-            class="{{ request()->routeIs('dashboard.profile') ? 'active-link' : '' }}">
-            🧑 ویرایش مشخصات
-            </a>
-
-            <a href="{{ route('dashboard.insurance') }}"
-            class="{{ request()->routeIs('dashboard.insurance') ? 'active-link' : '' }}">
-            👥 بیمه ورزشی
-            </a>
-
-            <a href="{{ route('dashboard.payments') }}"
-            class="{{ request()->routeIs('dashboard.payments') ? 'active-link' : '' }}">
-            💳 پرداخت‌ها
-            </a>
-
-            <a href="{{ route('dashboard.programs') }}"
-            class="{{ request()->routeIs('dashboard.programs') ? 'active-link' : '' }}">
-            📅 برنامه‌ها
-            </a>
-
-            <a href="{{ route('dashboard.courses') }}"
-            class="{{ request()->routeIs('dashboard.courses') ? 'active-link' : '' }}">
-            📘 دوره‌ها
-            </a>
-
-            <a href="{{ route('dashboard.reports.index') }}"
-            class="{{ request()->routeIs('dashboard.reports.*') ? 'active-link' : '' }}">
-            📝 گزارش‌ها
-            </a>
-
-            <a href="{{ route('dashboard.settings') }}"
-            class="{{ request()->routeIs('dashboard.settings') ? 'active-link' : '' }}">
-            ⚙️ تنظیمات
-            </a>
-
-            <a href="{{ route('logout') }}">
-                🚪 خروج
-            </a>
-        </aside>
-
-        {{-- Main Content --}}
-        <div class="main-content">
-            {{-- Breadcrumb --}}
-            @hasSection('breadcrumb')
-                <div class="breadcrumb">
-                    @yield('breadcrumb')
-                </div>
-            @endif
-
-            {{-- Page Content --}}
-            @yield('content')
         </div>
+    </nav>
+</header>
+
+<div class="dashboard-container">
+    <aside class="sidebar">
+        <h5 class="text-center" id="userpanel">پنل کاربری</h5>
+        <a href="{{ route('dashboard.index') }}" class="{{ request()->routeIs('dashboard.index') ? 'active-link' : '' }}">
+            <i class="bi bi-house-door-fill me-2"></i> خانه داشبورد
+        </a>
+        <a href="{{ route('dashboard.profile') }}" class="{{ request()->routeIs('dashboard.profile') ? 'active-link' : '' }}">
+            <i class="bi bi-person-lines-fill me-2"></i> ویرایش مشخصات
+        </a>
+        <a href="{{ route('dashboard.insurance') }}" class="{{ request()->routeIs('dashboard.insurance') ? 'active-link' : '' }}">
+            <i class="bi bi-people-fill me-2"></i> بیمه ورزشی
+        </a>
+        <a href="{{ route('dashboard.payments') }}" class="{{ request()->routeIs('dashboard.payments') ? 'active-link' : '' }}">
+            <i class="bi bi-credit-card-2-front-fill me-2"></i> پرداخت‌ها
+        </a>
+        <a href="{{ route('dashboard.programs') }}" class="{{ request()->routeIs('dashboard.programs') ? 'active-link' : '' }}">
+            <i class="bi bi-calendar-event-fill me-2"></i> برنامه‌ها
+        </a>
+        <a href="{{ route('dashboard.courses') }}" class="{{ request()->routeIs('dashboard.courses') ? 'active-link' : '' }}">
+            <i class="bi bi-book-fill me-2"></i> دوره‌ها
+        </a>
+        <a href="{{ route('dashboard.reports.index') }}" class="{{ request()->routeIs('dashboard.reports.*') ? 'active-link' : '' }}">
+            <i class="bi bi-pencil-square me-2"></i> گزارش‌ها
+        </a>
+        <a href="{{ route('dashboard.settings') }}" class="{{ request()->routeIs('dashboard.settings') ? 'active-link' : '' }}">
+            <i class="bi bi-gear-fill me-2"></i> تنظیمات
+        </a>
+    </aside>
+
+    <div class="main-content">
+        @hasSection('breadcrumb')
+        <div class="breadcrumb">
+            @yield('breadcrumb')
+        </div>
+        @endif
+        @yield('content')
     </div>
-    <footer class="bg-dark text-light pt-5 mt-5 border-top font-vazirmatn">
-        <div class="container">
-            <div class="row gy-4">
+</div>
 
-                {{-- ستون ۱: آدرس و نقشه --}}
-                <div class="col-md-3">
-                    <h5 class="fw-bold text-center mb-3">آدرس</h5>
-                    <div id="map" style="height: 220px; border-radius: 8px; margin-bottom: 1rem;"></div>
-                    <p class="mb-1"><i class="bi bi-geo-alt-fill me-2"></i>کرج، گلشهر، بلوار گلزار غربی، خیابان یاس، ساختمان سینا، طبقه سوم، واحد شش</p>
-                    <p><i class="bi bi-mailbox me-2"></i>کد پستی: ۳۱۹۸۷۱۷۸۱۵</p>
-                </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggleButton = document.getElementById('sidebarToggle');
+        const sidebar = document.querySelector('.sidebar');
+        toggleButton.addEventListener('click', function () {
+            sidebar.classList.toggle('show');
+        });
+    });
+</script>
 
-                {{-- ستون ۲: تماس با ما --}}
-                <div class="col-md-3">
-                    <h5 class="fw-bold mb-3">تماس با ما</h5>
-                    <ul class="list-unstyled ps-1 fs-6">
-                        <li class="mb-5 mt-5"><i class="bi bi-telephone-fill me-2"></i>۰۲۶۳۳۵۰۸۰۱۸</li>
-                        <li class="mb-5"><i class="bi bi-phone-fill me-2"></i>۰۹۱۰۶۸۷۱۱۸۵</li>
-                        <li class="mb-5"><i class="bi bi-envelope-fill me-2"></i>
-                            <a href="mailto:info@kanoonkoh.ir" class="text-info text-decoration-none">info@kanoonkoh.ir</a>
-                        </li>
-                        <li class="mb-5"><i class="bi bi-instagram me-2"></i>
-                            <a href="https://instagram.com/kanoonkooh" class="text-info text-decoration-none" target="_blank">@kanoonkooh</a>
-                        </li>
-                        <li><i class="bi bi-telegram me-2"></i>
-                            <a href="https://t.me/kanoonkoohgroup" class="text-info text-decoration-none" target="_blank">t.me/kanoonkoohgroup</a>
-                        </li>
-                    </ul>
-                </div>
-
-                {{-- ستون ۳: لینک‌ها --}}
-                <div class="col-md-3 font-sahel">
-                    <h5 class="fw-bold mb-3">لینک‌های مهم</h5>
-                    <ul class="list-unstyled fs-6 ps-1">
-                        <li class="mb-5 mt-5"><a href="{{ route('courses.index') }}" class="text-light text-decoration-none">آخرین دوره‌ها</a></li>
-                        <li class="mb-5"><a href="{{ route('programs.index') }}" class="text-light text-decoration-none">آخرین برنامه‌ها</a></li>
-                        <li class="mb-5"><a href="{{ route('reports.index') }}" class="text-light text-decoration-none">آخرین گزارش‌ها</a></li>
-                        <li><a href="{{ route('conditions') }}" class="text-light text-decoration-none">شرایط عضویت</a></li>
-                    </ul>
-                </div>
-
-                {{-- ستون ۴: درباره باشگاه --}}
-                <div class="col-md-3">
-                    <h5 class="fw-bold text-center mb-3">درباره باشگاه</h5>
-                    <img src="{{ asset('images/logo-blue.png') }}" alt="کانون کوه" class="mb-3 d-block mx-auto" style="width: 100%;">
-                    <p class="text-justify small" style="text-align: justify;">
-                        در اواخر دهه ۸۰، جمعی از بازنشستگان علاقه‌مند به کوهنوردی گروهی منسجم تشکیل دادند که بعدها به باشگاه کوهنوردی کانون کوه تبدیل شد.
-                        این باشگاه با برگزاری دوره‌ها و برنامه‌های منظم، به یکی از فعال‌ترین باشگاه‌های کوهنوردی، طبیعت‌گردی و حامی محیط‌زیست در البرز تبدیل شده است.
-                    </p>
-                </div>
-
-            </div>
-
-            <hr class="border-light my-4">
-
-            {{-- سطر پایانی --}}
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center pb-3">
-            <div>
-                <span>© <span id="shamsi-year" class="persian-number"></span> تمامی حقوق برای باشگاه کانون کوه محفوظ است.</span>
-            </div>
-                <div class="text-center text-md-end">
-                    طراحی شده با ❤️ توسط
-                    <a href="https://linkedin.com/in/ramangorgin" target="_blank" class="text-info text-decoration-none fw-bold">رامان گرگین پاوه</a>
-                </div>
-            </div>
-        </div>
-    </footer>
+<script src="{{ asset('js/jquery.min.js') }}"></script>
+<script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ asset('js/persian-date.min.js') }}"></script>
+<script src="{{ asset('js/persian-datepicker.min.js') }}"></script>
+<script src="{{ asset('js/select2.min.js') }}"></script>
+<script src="{{ asset('js/leaflet.js') }}"></script>
+<script src="{{ asset('js/ckeditor.js') }}"></script>
 
 
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
 
-        {{-- نقشه و تاریخ --}}
-        <script>
-            // سال شمسی به فارسی
-            const date = new persianDate();
-            document.getElementById('shamsi-year').innerText = date.year().toString().replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+{{-- نقشه و تاریخ --}}
+<script>
+    // سال شمسی به فارسی
+    const date = new persianDate();
+    document.getElementById('shamsi-year').innerText = date.year().toString().replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
 
-            // نقشه
-            var map = L.map('map').setView([35.8232941, 50.9331318], 16);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(map);
-            L.marker([35.8232941, 50.9331318]).addTo(map);
-        </script>    
-    
-    @stack('scripts')
+    // نقشه
+    var map = L.map('map').setView([35.8232941, 50.9331318], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    L.marker([35.8232941, 50.9331318]).addTo(map);
+</script>    
+
+
+@stack('scripts')
 </body>
 </html>
-

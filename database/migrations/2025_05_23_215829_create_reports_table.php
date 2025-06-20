@@ -56,7 +56,7 @@ return new class extends Migration
             $table->json('execution_schedule')->nullable();
 
             $table->string('pdf_path')->nullable();
-            $table->string('track_path')->nullable();
+            $table->string('track_file_path')->nullable();
 
             $table->foreignId('leader_id')->nullable()->constrained('users')->onDelete('set null');
             $table->foreignId('assistant_leader_id')->nullable()->constrained('users')->onDelete('set null');

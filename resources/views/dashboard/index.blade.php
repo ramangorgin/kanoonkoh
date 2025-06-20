@@ -33,18 +33,17 @@
     @if (!$needsCompletion)
         <div class="card mb-4">
             <div class="card-body d-flex align-items-center">
-                <img src="{{ $user->profile && $user->profile->personal_photo ? asset('storage/' . $user->profile->personal_photo) : asset('images/default-avatar.png') }}"
-                    class="rounded-circle me-3" width="80" height="80" alt="avatar">
+                <img src="{{ $user->profile && $user->profile->personal_photo ? asset('storage/' . $user->profile->personal_photo) : asset('images/default-avatar.png') }}" alt="عکس کاربر" class="img-thumbnail me-3" style="max-height: 120px;">
                 <div>
-                    <h5 class="mb-0">
+                    <h5 class="mb-3">
                         {{ $user->profile->first_name ?? '' }} {{ $user->profile->last_name ?? '' }}
                     </h5>
-                    <small class="text-muted">
-                        سطح عضویت: {{ $user->profile->membership_status ?? 'تعریف نشده' }}
+                    <small class="text-muted mb-2">
+                        وضعیت عضویت: {{ $user->profile->membership_status ?? 'تعریف نشده' }}
                     </small><br>
                     <small class="text-muted">
                         تاریخ عضویت:
-                        {{ $user->profile->membership_date ? jdate($user->profile->membership_date)->format('Y/m/d') : '---' }}
+                        {{ $user->profile->membership_date ? jdate($user->profile->membership_date)->format('Y/m/d') : 'تنظیم نشده' }}
                     </small>
                 </div>
             </div>

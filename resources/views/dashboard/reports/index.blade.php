@@ -18,10 +18,10 @@
 <div class="container py-4">
     <h3 class="mb-4">گزارش‌های نوشته‌شده توسط شما</h3>
 
-    @if(isset($reports) && !$reports->isEmpty())
+    @if($reports->isEmpty())
+    <div class="alert alert-info">شما تاکنون گزارشی ارسال نکرده‌اید.</div>
+@else
 
-        <div class="alert alert-info">شما تاکنون گزارشی ارسال نکرده‌اید.</div>
-    @else
     <a href="{{ route('dashboard.reports.create') }}" class="btn btn-primary mb-4">
         + ثبت گزارش جدید
     </a>
@@ -51,6 +51,7 @@
                         <td>{{ jdate($report->created_at)->format('Y/m/d') }}</td>
                         <td>
                             <a href="{{ route('dashboard.reports.show', $report->id) }}" class="btn btn-sm btn-outline-primary">مشاهده</a>
+                            <a href="{{ route('dashboard.reports.edit', $report->id) }}" class="btn btn-sm btn-outline-secondary">ویرایش</a>
                         </td>
                     </tr>
                 @endforeach
