@@ -8,7 +8,9 @@ class CourseRegistration extends Model
 {
     protected $fillable = [
         'course_id', 'user_id',
-        'transaction_code', 'receipt_file', 'approved',
+        'guest_name', 'guest_phone', 'guest_national_id',
+        'transaction_code',
+        'receipt_file', 'approved',
     ];
 
     public function user()

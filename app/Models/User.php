@@ -27,6 +27,11 @@ class User extends Authenticatable
     {
         return $this->role === 'admin';
     }
+    public function programRoles()
+    {
+        return $this->hasMany(ProgramUserRole::class);
+    }
+
 
     public function getFullNameAttribute()
     {

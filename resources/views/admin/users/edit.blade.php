@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('admin.layout')
 
 @section('breadcrumb')
     <nav aria-label="breadcrumb">
@@ -165,45 +165,6 @@
                 <input type="text" name="emergency_contact_relation" value="{{ old('emergency_contact_relation', $profile->emergency_contact_relation ?? '') }}" class="form-control">
             </div>
         </div>
-
-        {{-- 📘 دوره‌های گذرانده‌شده پیش از عضویت --}}
-        <h5 class="mb-3 mt-4">دوره‌های قبلی</h5>
-        <div class="mb-3">
-            <label for="has_previous_courses" class="form-label">آیا کاربر پیش از عضویت دوره‌ای گذرانده است؟</label>
-            <select class="form-select" id="has_previous_courses" name="has_previous_courses">
-            <option value="no" {{ ($user->courseCertificates && $user->courseCertificates->count()) ? '' : 'selected' }}>خیر</option>
-        <option value="yes" {{ ($user->courseCertificates && $user->courseCertificates->count()) ? 'selected' : '' }}>بله</option>
-            </select>
-        </div>
-
-{{-- فرم پویا برای دوره‌ها --}}
-<div id="previous_courses_section" style="{{ optional($user->courseCertificates)->count() ? '' : 'display: none;' }}">
-    <label class="form-label">مشخصات دوره‌ها</label>
-    <div id="courses_container">
-        @foreach($user->courseCertificates ?? [] as $i => $certificate)
-            <div class="course-entry mb-3 border p-3 rounded">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <label class="form-label">نام دوره</label>
-                    <button type="button" class="btn btn-sm btn-outline-danger remove-course-btn">حذف</button>
-                </div>
-                <input type="text" name="courses[{{ $i }}][title]" value="{{ $certificate->course_name }}" class="form-control mb-2">
-
-                <label class="form-label">فایل مدرک</label>
-                <input type="file" name="courses[{{ $i }}][file]" class="form-control">
-
-                @if($certificate->file_path)
-                    <a href="{{ asset('storage/' . $certificate->file_path) }}" target="_blank" class="btn btn-link mt-1">مشاهده فایل فعلی</a>
-                @endif
-            </div>
-        @endforeach
-    </div>
-
-    <div class="d-flex justify-content-end">
-        <button type="button" class="btn btn-sm btn-secondary mt-2 me-2" id="add_course_btn">افزودن دوره دیگر</button>
-    </div>
-</div>
-
-
 
         <button class="btn btn-primary mt-3" style="width: 100%;">ویرایش کاربر</button>
     </form>

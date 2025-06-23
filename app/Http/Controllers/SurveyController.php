@@ -14,7 +14,13 @@ class SurveyController extends Controller
     public function courseForm($course_id)
     {
         $course = Course::findOrFail($course_id);
-        return view('surveys.course', compact('course'));
+        return view('admin.surveys.courses.create', compact('course'));
+    }
+
+    public function programForm($program_id)
+    {
+        $program = Program::findOrFail($program_id);
+        return view('admin.surveys.programs.create', compact('program'));
     }
 
     public function submitCourse(Request $request, $course_id)
@@ -40,58 +46,10 @@ class SurveyController extends Controller
             'feedback_text' => $request->feedback_text,
         ]);
 
-        return redirect()->route('dashboard')->with('success', 'نظرسنجی با موفقیت ثبت شد.');
+        return redirect()->back()->with('success', 'نظرسنجی با موفقیت ثبت شد.');
     }
 
-    public function programForm($program_id)
-    {
-        $program = Program::findOrFail($program_id);
-        return view('surveys.program', compact('program'));
-    }
-
-    // app/Http/Controllers/Admin/SurveyController.php
-
-    public function stats($type, $id)
-    {
-        if ($type === 'course') {
-            $model = \App\Models\Course::findOrFail($id);
-            $surveys = \App\Models\CourseSurvey::where('course_id', $id)->get();
-        } elseif ($type === 'program') {
-            $model = \App\Models\Program::findOrFail($id);
-            $surveys = \App\Models\ProgramSurvey::where('program_id', $id)->get();
-        } else {
-            abort(404);
-        }
-
-        if ($surveys->isEmpty()) {
-            return back()->with('error', 'هیچ پاسخی برای این نظرسنجی وجود ندارد.');
-        }
-
-        // استخراج میانگین امتیازها
-        $questions = [
-            'q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9', 'q10',
-        ];
-
-        $averages = [];
-        foreach ($questions as $q) {
-            $avg = round($surveys->avg($q), 2);
-            $averages[$q] = $avg;
-        }
-
-        // درصد ناشناس‌ها
-        $anonymous_count = $surveys->where('is_anonymous', true)->count();
-        $named_count = $surveys->count() - $anonymous_count;
-
-        // نظرات متنی
-        $comments = $surveys->pluck('comments')->filter();
-
-        return view('admin.surveys.stats', compact(
-            'type', 'model', 'averages', 'anonymous_count', 'named_count', 'comments'
-        ));
-    }
-
-
-    public function submitProgram(Request $request, $program_id)
+     public function submitProgram(Request $request, $program_id)
     {
         $request->validate([
             'planning_quality' => 'required|integer|min:1|max:5',
@@ -114,6 +72,28 @@ class SurveyController extends Controller
             'feedback_text' => $request->feedback_text,
         ]);
 
-        return redirect()->route('dashboard')->with('success', 'نظرسنجی با موفقیت ثبت شد.');
+        return redirect()->back()->with('success', 'نظرسنجی با موفقیت ثبت شد.');
     }
+
+    public function courseIndex()
+    {
+        $surveys = CourseSurvey::latest()->paginate(20);
+        return view('admin.surveys.courses.index', compact('surveys'));
+    }
+
+    public function programIndex()
+    {
+        $surveys = ProgramSurvey::latest()->paginate(20);
+        return view('admin.surveys.programs.index', compact('surveys'));
+    }
+    
+    public function stats()
+    {
+        $courseSurveys = \App\Models\CourseSurvey::with('course')->latest()->get();
+        $programSurveys = \App\Models\ProgramSurvey::with('program')->latest()->get();
+
+        return view('admin.surveys.stats', compact('courseSurveys', 'programSurveys'));
+    }
+
+
 }

@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('admin.layout')
 
 @section('breadcrumb')
     <nav aria-label="breadcrumb">
@@ -26,7 +26,7 @@
             @foreach($programs as $program)
             <tr>
                 <td>{{ $program->title }}</td>
-                <td>{{ jdate($program->start_date)->format('Y/m/d') }}</td>
+                <td>{{($program->start_date) }}</td>
                 <td>{{ $program->location }}</td>
                 <td>{{ $program->capacity }}</td>
                 <td>
@@ -54,7 +54,7 @@
             @foreach($courses as $course)
             <tr>
                 <td>{{ $course->title }}</td>
-                <td>{{ jdate($course->start_date)->format('Y/m/d') }}</td>
+                <td>{{ ($course->start_date) }}</td>
                 <td>{{ $course->instructor }}</td>
                 <td>{{ $course->capacity }}</td>
                 <td>

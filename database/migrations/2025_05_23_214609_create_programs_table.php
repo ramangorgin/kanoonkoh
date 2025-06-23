@@ -14,17 +14,17 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->json('photos')->nullable();
         
-            $table->date('start_date')->nullable();
-            $table->date('end_date')->nullable();
+            $table->string('start_date')->nullable();
+            $table->string('end_date')->nullable();
 
             $table->boolean('has_transport')->default(true);
 
-            $table->dateTime('departure_dateTime_tehran')->nullable();
+            $table->string('departure_dateTime_tehran')->nullable();
             $table->string('departure_place_tehran')->nullable();
             $table->decimal('departure_lat_tehran', 10, 7)->nullable();
             $table->decimal('departure_lon_tehran', 10, 7)->nullable();
         
-            $table->dateTime('departure_dateTime_karaj')->nullable();
+            $table->string('departure_dateTime_karaj')->nullable();
             $table->string('departure_place_karaj')->nullable();
             $table->decimal('departure_lat_karaj', 10, 7)->nullable();
             $table->decimal('departure_lon_karaj', 10, 7)->nullable();
@@ -43,7 +43,7 @@ return new class extends Migration
         
         
             $table->boolean('is_registration_open')->default(true);
-            $table->dateTime('registration_deadline')->nullable();
+            $table->string('registration_deadline')->nullable();
         
             $table->timestamps();
         });

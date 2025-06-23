@@ -15,16 +15,14 @@ return new class extends Migration
             $table->foreignId('program_id')->nullable()->constrained()->onDelete('set null');
         
             $table->string('title');
-            $table->text('full_report')->nullable();
+            $table->text('content')->nullable();
             $table->json('gallery')->nullable();
             $table->boolean('approved')->default(false);
                     
             $table->string('type')->nullable();
             $table->string('area')->nullable();
-            $table->string('peak_name')->nullable();
             $table->integer('peak_height')->nullable();
-            $table->integer('start_altitude')->nullable();
-            $table->string('duration')->nullable();
+            $table->integer('start_height')->nullable();
             $table->dateTime('start_date')->nullable();
             $table->dateTime('end_date')->nullable();
             $table->string('writer_name')->nullable();
@@ -32,14 +30,9 @@ return new class extends Migration
             $table->string('road_type')->nullable();
             $table->json('transportation')->nullable();
             $table->json('water_type')->nullable();
-            $table->boolean('signal_status')->default(false);
             $table->json('required_equipment')->nullable();
             $table->json('required_skills')->nullable();
             $table->string('difficulty')->nullable();
-            $table->string('slope_angle')->nullable();
-            $table->boolean('has_stone_climbing')->default(false);
-            $table->boolean('has_ice_climbing')->default(false);
-            $table->string('average_backpack_weight')->nullable();
             
             $table->text('natural_description')->nullable();
             $table->string('weather')->nullable();
@@ -58,18 +51,6 @@ return new class extends Migration
             $table->string('pdf_path')->nullable();
             $table->string('track_file_path')->nullable();
 
-            $table->foreignId('leader_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->foreignId('assistant_leader_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->foreignId('technical_manager_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->foreignId('guide_id')->nullable()->constrained('users')->onDelete('set null');
-            $table->foreignId('support_id')->nullable()->constrained('users')->onDelete('set null');
-        
-            $table->foreignId('leader_name')->nullable();
-            $table->foreignId('assistant_leader_name')->nullable();
-            $table->foreignId('technical_manager_name')->nullable();
-            $table->foreignId('guide_name')->nullable();
-            $table->foreignId('support_name')->nullable();
-        
             $table->timestamps();
         });
         

@@ -1,5 +1,5 @@
 
-@extends('layouts.admin')
+@extends('admin.layout')
 
 @section('breadcrumb')
     <nav aria-label="breadcrumb">

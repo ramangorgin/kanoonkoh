@@ -10,7 +10,7 @@ class HomeController extends Controller
 {
     public function index()
     {
-        return view('index', [
+        return view('home', [
             'latestPrograms' => Program::latest()->take(3)->get(),
             'latestCourses' => Course::latest()->take(3)->get(),
             'latestReports' => Report::where('approved', true)->latest()->take(3)->get(),

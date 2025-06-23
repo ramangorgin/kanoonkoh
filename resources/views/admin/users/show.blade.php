@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('admin.layout')
 
 @section('breadcrumb')
     <nav aria-label="breadcrumb">
@@ -28,8 +28,7 @@
             <div class="col-md-9 ps-3 py-3">
                 @if($user->profile?->personal_photo)
                     <a href="{{ asset('storage/' . $user->profile->personal_photo) }}" target="_blank">
-                        <img src="{{ asset('storage/' . $user->profile->personal_photo) }}" class="img-thumbnail">
-                    </a>
+                        <img src="{{ asset('storage/' . $user->profile->personal_photo) }}" class="img-thumbnail" style="width: 100px;">                    </a>
                 @else
                     <p class="text-muted">تصویری ثبت نشده است</p>
                 @endif
@@ -39,10 +38,26 @@
                 <p><strong>نام خانوادگی:</strong> {{ $user->profile->last_name ?? '---'}}</p>
                 <p><strong>نام پدر:</strong> {{ $user->profile->father_name ?? '---'}}</p>
                 <p><strong>کد ملی:</strong> {{ $user->profile->national_id ?? '---'}}</p>
-                <p><strong>تاریخ تولد:</strong> {{ $user->profile->birth_date ?? '---'}}</p>
-                <p><strong>جنسیت:</strong> {{ $user->profile->gender ?? '---'}}</p>
+                <p><strong>تاریخ تولد:</strong> {{ $user->profile && $user->profile->birth_date ? \Morilog\Jalali\Jalalian::fromDateTime($user->profile->birth_date)->format('Y/m/d') : '---' }}</p>
+                <p><strong>جنسیت:</strong>
+                    @if($user->profile && $user->profile->gender)
+                        @switch($user->profile->gender)
+                            @case('male')
+                                مرد
+                                @break
+
+                            @case('female')
+                                زن
+                                @break
+
+                            @default
+                                سایر
+                        @endswitch
+                    @else
+                        ---
+                    @endif
+                </p>
                 <p><strong>شماره تماس:</strong> {{ $user->profile->phone ?? '---'}}</p>
-                <p><strong>تلفن اضطراری:</strong> {{ $user->profile->emergency_phone ?? '---'}}</p>
                 <p><strong>استان:</strong> {{ $user->profile->province ?? '---'}}</p>
                 <p><strong>شهر:</strong> {{ $user->profile->city ?? '---'}}</p>
                 <p><strong>آدرس:</strong> {{ $user->profile->address ?? '---'}}</p>
@@ -51,8 +66,8 @@
                 <p><strong>سطح عضویت:</strong> {{ $user->profile->membership_level ?? '---'}}</p>
                 <p><strong>وضعیت عضویت:</strong> {{ $user->profile->membership_status ?? '---'}}</p>
                 <p><strong>امتیاز:</strong> {{ $user->profile->points ?? '---'}}</p>
-                <p><strong>قد:</strong> {{ $user->profile->height_cm ?? '---'}} cm</p>
-                <p><strong>وزن:</strong> {{ $user->profile->weight_kg ?? '---'}} kg</p>
+                <p><strong>قد:</strong> {{ $user->profile->height ?? '---'}} cm</p>
+                <p><strong>وزن:</strong> {{ $user->profile->weight ?? '---'}} kg</p>
                 <p><strong>بیماری‌ها:</strong> {{ $user->profile->medical_conditions ?? '---'}}</p>
                 <p><strong>آلرژی‌ها:</strong> {{ $user->profile->allergies ?? '---'}}</p>
                 <p><strong>شغل:</strong> {{ $user->profile->job ?? '---'}}</p>
@@ -62,6 +77,8 @@
                 <p><strong>داروهای مصرفی:</strong> {{ $user->profile->medications ?? '---'}}</p>
                 <p><strong>نام تماس اضطراری:</strong> {{ $user->profile->emergency_contact_name ?? '---'}}</p>
                 <p><strong>نسبت تماس اضطراری:</strong> {{ $user->profile->emergency_contact_relation ?? '---'}}</p>
+                <p><strong>تلفن اضطراری:</strong> {{ $user->profile->emergency_phone ?? '---'}}</p>
+
             </div>
         </div>
     </div>

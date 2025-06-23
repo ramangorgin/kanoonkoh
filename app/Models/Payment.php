@@ -34,11 +34,12 @@ class Payment extends Model
 
     public function relatedProgram()
     {
-        return $this->belongsTo(Program::class, 'related_id')->where('type', 'program');
+        return $this->belongsTo(Program::class, 'related_id');
     }
 
     public function relatedCourse()
     {
-        return $this->belongsTo(Course::class, 'related_id')->where('type', 'course');
+        return $this->belongsTo(Course::class, 'related_id');
     }
+
 }

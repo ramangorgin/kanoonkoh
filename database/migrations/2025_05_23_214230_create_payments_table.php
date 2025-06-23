@@ -14,7 +14,8 @@ class CreatePaymentsTable extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
 
             $table->enum('type', ['membership', 'course', 'program']);
-            $table->unsignedBigInteger('related_id')->nullable(); 
+            $table->unsignedBigInteger('related_id')->nullable();
+            $table->string('related_type')->nullable();
             $table->integer('year')->nullable(); 
             $table->integer('amount')->nullable(); 
             $table->date('payment_date')->nullable();
