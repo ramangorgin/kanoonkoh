@@ -20,7 +20,7 @@
     {{-- نمایش پیام خوش‌آمدگویی و درخواست تکمیل پروفایل --}}
     @if($needsCompletion)
         <div class="alert alert-warning">
-            <h5 class="mb-2">کاربر گرامی، عضویت شما هنوز کامل نشده است</h5>
+            <h5 class="mb-2" style="font-family: Vazirmatn;" >کاربر گرامی، عضویت شما هنوز کامل نشده است</h5>
             <ul class="mb-0">
                 <li>لطفاً <a href="{{ route('dashboard.profile') }}">مشخصات کاربری</a> خود را کامل کنید.</li>
                 <li> <a href="{{ route('dashboard.insurance') }}">بیمه ورزشی</a> خود را بارگذاری نمایید.</li>
