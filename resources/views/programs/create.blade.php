@@ -55,7 +55,7 @@
         </div>
 
         {{-- مسئولین --}}
-         <h5 class="mt-4">مسئولین برنامه</h5>
+        <h5 class="mt-4">مسئولین برنامه</h5>
         <div id="roles-wrapper">
             <div class="role-row mb-3 border p-3 rounded">
                 <div class="row g-2 align-items-end">
@@ -66,10 +66,12 @@
                     <div class="col-md-4">
                         <label class="form-label">شناسه کاربر</label>
                         <select name="roles[0][user_id]" class="form-select user-select select2">
+                            <option value="">— انتخاب کاربر —</option> 
                             @foreach($users as $user)
                                 <option value="{{ $user->id }}">{{ $user->full_name }}</option>
                             @endforeach
                         </select>
+
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">نام فرد (در صورت نبودن اکانت)</label>
@@ -253,8 +255,32 @@
     </form>
 
 @push('scripts')
-<!-- CKEditor -->
-<script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
+<script>
+    // فعال/غیرفعال‌سازی فیلد نام دستی بر اساس انتخاب کاربر
+    function toggleUserNameField(selectElement) {
+        const userNameInput = selectElement.closest('.role-row').querySelector('input[name*="[user_name]"]');
+        if (selectElement.value) {
+            userNameInput.setAttribute('disabled', 'disabled');
+            userNameInput.value = ''; // خالی کردن فیلد در صورت انتخاب کاربر
+        } else {
+            userNameInput.removeAttribute('disabled');
+        }
+    }
+
+    // اجرا روی فرم اولیه
+    document.querySelectorAll('.user-select').forEach(select => {
+        toggleUserNameField(select); // وضعیت اولیه
+        select.addEventListener('change', function () {
+            toggleUserNameField(this);
+        });
+    });
+
+    // برای فیلدهایی که با "افزودن سمت جدید" ایجاد می‌شن هم بعد از اضافه کردن، این رو اجرا کن:
+    $('#roles-wrapper').on('change', '.user-select', function () {
+        toggleUserNameField(this);
+    });
+
+</script>
 <script>
     ClassicEditor
         .create(document.querySelector('#description'), {
@@ -264,17 +290,6 @@
             console.error(error);
         });
 </script>
-
-<!-- Select2 -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-<!-- Persian Datepicker -->
-<script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
-
-<!-- Leaflet -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 $(document).ready(function () {
@@ -324,6 +339,7 @@ $(document).ready(function () {
         observer: true,
         initialValue: false,
         calendarType: 'persian'
+        
     });
 
     // مهلت ثبت‌نام
@@ -332,7 +348,7 @@ $(document).ready(function () {
         autoClose: true,
         observer: true,
         initialValue: false,
-        calendarType: 'persian'
+        calendarType: 'persian',
         timePicker: {
             enabled: true,
             second: false
@@ -422,6 +438,4 @@ $(document).ready(function () {
 });
 </script>
 @endpush
-
-
 @endsection

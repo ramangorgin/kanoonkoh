@@ -35,7 +35,7 @@
             <div class="card-body d-flex align-items-center">
                 <img src="{{ $user->profile && $user->profile->personal_photo ? asset('storage/' . $user->profile->personal_photo) : asset('images/default-avatar.png') }}" alt="عکس کاربر" class="img-thumbnail me-3" style="max-height: 120px;">
                 <div>
-                    <h5 class="mb-3">
+                    <h5 style="font-family: Vazirmatn;" class="mb-3">
                         {{ $user->profile->first_name ?? '' }} {{ $user->profile->last_name ?? '' }}
                     </h5>
                     <small class="text-muted mb-2">

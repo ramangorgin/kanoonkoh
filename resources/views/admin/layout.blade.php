@@ -6,7 +6,6 @@
    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
     <link rel="stylesheet" href="{{ asset('css/bootstrap.rtl.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('css/bootstrap-icons.css') }}">
@@ -24,6 +23,8 @@
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/sahel-font@v3.4.0/dist/font-face.css" rel="stylesheet" type="text/css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
+
 
 <style>
     body {
@@ -154,29 +155,49 @@
             @yield('content')
         </main>
     </div>
-    <script src="{{ asset('js/jquery.min.js') }}"></script>
-<script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
-<script src="{{ asset('js/persian-date.min.js') }}"></script>
-<script src="{{ asset('js/persian-datepicker.min.js') }}"></script>
-<script src="{{ asset('js/select2.min.js') }}"></script>
-<script src="{{ asset('js/leaflet.js') }}"></script>
-<script src="{{ asset('js/ckeditor.js') }}"></script>
 
+    <!-- ✅ jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        window.jQuery || document.write('<script src="{{ asset('js/jquery.min.js') }}"><\/script>');
+    </script>
 
+    <!-- ✅ Persian Date -->
+    <script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
+    <script>
+        window.persianDate || document.write('<script src="{{ asset('js/persian-date.min.js') }}"><\/script>');
+    </script>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/persian-date@1.0.6/dist/persian-date.min.js"></script>
+    <!-- ✅ Persian Datepicker -->
+    <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+    <script>
+        window.jQuery.fn.persianDatepicker || document.write('<script src="{{ asset('js/persian-datepicker.min.js') }}"><\/script>');
+    </script>
 
-    
-    
-    
+    <!-- ✅ Bootstrap (bundle includes Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        typeof bootstrap === 'undefined' && document.write('<script src="{{ asset('js/bootstrap.bundle.min.js') }}"><\/script>');
+    </script>
+
+    <!-- ✅ Select2 -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        typeof $.fn.select2 === 'undefined' && document.write('<script src="{{ asset('js/select2.min.js') }}"><\/script>');
+    </script>
+
+    <!-- ✅ Leaflet -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        typeof L === 'undefined' && document.write('<script src="{{ asset('js/leaflet.js') }}"><\/script>');
+    </script>
+
+    <!-- ✅ CKEditor -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
+    <script>
+        typeof ClassicEditor === 'undefined' && document.write('<script src="{{ asset('js/ckeditor.js') }}"><\/script>');
+    </script>
+        
     @stack('scripts')
     </body>
 </html>

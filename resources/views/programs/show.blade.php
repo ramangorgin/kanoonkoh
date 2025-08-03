@@ -15,10 +15,10 @@
         <div class="row">
             <div class="col-md-6 col-sm-12">
               {{-- اسلایدشو عکس‌ها --}}
-                @if($program->report_photos && count($program->report_photos) > 0)
+                @if($program->photos && count($program->photos) > 0)
                     <div id="programCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
                         <div class="carousel-inner">
-                            @foreach($program->report_photos as $index => $photo)
+                            @foreach($program->photos as $index => $photo)
                                 <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
                                     <img src="{{ asset('storage/' . $photo) }}" class="d-block w-100" alt="program photo">
                                 </div>
@@ -39,9 +39,36 @@
                 @if($program->description)
                     <div>
                         <h5>توضیحات برنامه</h5>
-                        <p>{!! $program->description !!}</p>
+                        <p class="text-justify">{!! $program->description !!}</p>
                     </div>
                 @endif
+                <div class="row mt-4">
+                    <!-- تاریخ شروع -->
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center bg-light border rounded p-3 shadow-sm">
+                            <i class="bi bi-calendar-event-fill text-primary fs-4 me-3"></i>
+                            <div>
+                                <div class="fw-bold">تاریخ شروع برنامه</div>
+                                <div class="text-muted">
+                                    {{ \Morilog\Jalali\Jalalian::fromCarbon(\Carbon\Carbon::createFromTimestampMs($program->start_date))->format('Y/m/d H:i') }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- تاریخ پایان -->
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center bg-light border rounded p-3 shadow-sm">
+                            <i class="bi bi-calendar-check-fill text-success fs-4 me-3"></i>
+                            <div>
+                                <div class="fw-bold">تاریخ پایان برنامه</div>
+                                <div class="text-muted">
+                                    {{ \Morilog\Jalali\Jalalian::fromCarbon(\Carbon\Carbon::createFromTimestampMs($program->end_date))->format('Y/m/d H:i') }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>        
     </div>
@@ -92,7 +119,7 @@
                     </div>
                     <div class="card-body">
                         <p><i class="bi bi-calendar-event-fill text-secondary"></i> تاریخ و ساعت حرکت:
-                            <strong>{{ $program->departure_dateTime_tehran ?? '—' }}</strong></p>
+                            <strong id="departure_dateTime_tehran" data-ts="{{ $program->departure_dateTime_tehran }}"></strong></p>
                         <p><i class="bi bi-geo-fill text-secondary"></i> محل حرکت:
                             <strong>{{ $program->departure_place_tehran ?? '—' }}</strong></p>
                         @if($program->departure_lat_tehran && $program->departure_lon_tehran)
@@ -112,7 +139,7 @@
                     </div>
                     <div class="card-body">
                         <p><i class="bi bi-calendar-event-fill text-secondary"></i> تاریخ و ساعت حرکت:
-                            <strong>{{ $program->departure_dateTime_karaj ?? '—' }}</strong></p>
+                            <strong id="departure_dateTime_karaj" data-ts="{{ $program->departure_dateTime_karaj }}"></strong></p>
                         <p><i class="bi bi-geo-fill text-secondary"></i> محل حرکت:
                             <strong>{{ $program->departure_place_karaj ?? '—' }}</strong></p>
                         @if($program->departure_lat_karaj && $program->departure_lon_karaj)
@@ -248,6 +275,19 @@
 
 @push('scripts')
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    const ts = document.getElementById("departure_dateTime_tehran").dataset.ts;
+
+    const dateStr = new persianDate(parseInt(ts)).format('YYYY/MM/DD HH:mm');
+    document.getElementById("departure_dateTime_tehran").innerText = dateStr;
+</script>
+<script>
+    const ts = document.getElementById("departure_dateTime_karaj").dataset.ts;
+
+    const dateStr = new persianDate(parseInt(ts)).format('YYYY/MM/DD HH:mm');
+    document.getElementById("departure_dateTime_karaj").innerText = dateStr;
+</script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         @if($program->departure_lat_tehran && $program->departure_lon_tehran)
