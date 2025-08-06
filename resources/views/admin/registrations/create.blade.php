@@ -17,7 +17,7 @@
                 </div>
 
                 <div class="card-body">
-                    <form action="{{ route('registration.store') }}" method="POST" enctype="multipart/form-data">
+                    <form action="{{ $type === 'program' ? route('registration.program.store', $program->id) : route('registration.course.store', $course->id) }}" method="POST" enctype="multipart/form-data" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         {{-- hidden fields --}}

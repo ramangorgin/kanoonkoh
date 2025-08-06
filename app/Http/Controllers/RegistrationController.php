@@ -17,6 +17,36 @@ use Illuminate\Support\Facades\Auth;
 
 class RegistrationController extends Controller
 {
+
+    public function createProgram($programId)
+    {
+        $program = Program::findOrFail($programId);
+        return view('admin.registrations.create', [
+            'type' => 'program',
+            'related_id' => $program->id,
+            'is_free' => $program->is_free,
+            'has_transportation' => $program->has_transportation,
+            'amount' => $program->is_free ? 0 : $program->cost,
+            'program' => $program
+        ]);
+    }
+
+
+    public function createCourse($courseId)
+    {
+        $course = Course::findOrFail($courseId);
+        return view('admin.registrations.create', [
+            'type' => 'course',
+            'related_id' => $course->id,
+            'is_free' => $program->is_free,
+            'amount' => $course->cost,
+            'course' => $course
+        ]);
+    }
+
+
+
+
      public function ProgramStore(Request $request, Program $program)
     {
         $data = $request->validate([

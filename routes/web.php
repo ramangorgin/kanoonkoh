@@ -94,6 +94,16 @@ Route::prefix('dashboard')->name('dashboard.')->middleware('auth')->group(functi
 
 });
 
+// Registratoins for Users:
+
+//get the form of registrations
+Route::get('registrations/program/{program}', [RegistrationController::class, 'createProgram'])->name('registrations.program.create');
+Route::get('registrations/course/{course}', [RegistrationController::class, 'createCourse'])->name('registrations.course.create');
+
+// post the form of regsitrations
+Route::post('/registrations/program/{program}', [RegistrationController::class, 'ProgramStore'])->name('registration.program.store');
+Route::post('/registrations/course/{course}', [RegistrationController::class, 'CourseStore'])->name('registration.course.store');
+
 
 
 //Admin Dashboard routes:

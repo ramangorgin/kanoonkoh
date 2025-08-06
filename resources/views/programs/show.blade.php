@@ -260,7 +260,14 @@
     @endif
 </div>
 
-    @auth
+<div class="mt-5 text-center">
+    <a href="{{ route('registrations.program.create', $program->id) }}" class="btn btn-primary btn-lg">
+        <i class="bi bi-pencil-square me-2"></i> ثبت‌نام در برنامه
+    </a>
+</div>
+
+
+@auth
     @if($userHasParticipated && !$userHasSubmittedSurvey)
         <div class="mt-4">
             <a href="{{ route('surveys.program.form', ['program' => $program->id]) }}" class="btn btn-primary">
