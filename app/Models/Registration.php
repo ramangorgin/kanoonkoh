@@ -9,12 +9,16 @@ class Registration extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
+protected $fillable = [
         'user_id',
         'type',
-        'related_id',
-        'payment_id',
-        'ride_location',
+        'related_id',        
+        'payment_id',       
+        'payment_date',      
+        'transaction_code', 
+        'receipt_file',      
+        'pickup_location',     
+
         'guest_name',
         'guest_national_id',
         'guest_birth_date',
@@ -22,7 +26,13 @@ class Registration extends Model
         'guest_phone',
         'guest_emergency_phone',
         'guest_insurance_file',
+
         'approved',
+    ];
+
+    protected $casts = [
+        'approved'     => 'boolean',
+        'payment_date' => 'date',  
     ];
 
     public function user()

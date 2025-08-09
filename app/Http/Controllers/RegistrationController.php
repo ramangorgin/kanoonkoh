@@ -10,9 +10,9 @@ use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\RegistrationsExport;
 use Barryvdh\DomPDF\Facade\Pdf;
-use App\Models\ProgramRegistration;
-use App\Models\CourseRegistration;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Morilog\Jalali\Jalalian;
 
 
 class RegistrationController extends Controller
@@ -25,8 +25,9 @@ class RegistrationController extends Controller
             'type' => 'program',
             'related_id' => $program->id,
             'is_free' => $program->is_free,
-            'has_transportation' => $program->has_transportation,
-            'amount' => $program->is_free ? 0 : $program->cost,
+            'has_transport' => $program->has_transport,
+            'member_cost' => $program->is_free ? 0 : $program->member_cost,
+            'guest_cost' => $program->is_free ? 0 : $program->guest_cost,
             'program' => $program
         ]);
     }
@@ -38,62 +39,206 @@ class RegistrationController extends Controller
         return view('admin.registrations.create', [
             'type' => 'course',
             'related_id' => $course->id,
-            'is_free' => $program->is_free,
+            'is_free' => $course->is_free,
             'amount' => $course->cost,
             'course' => $course
         ]);
     }
 
-
-
-
-     public function ProgramStore(Request $request, Program $program)
+    public function ProgramStore(Request $request, Program $program)
     {
-        $data = $request->validate([
-            'guest_name' => 'nullable|string',
-            'guest_phone' => 'nullable|string',
-            'guest_national_id' => 'nullable|string',
-            'transaction_code' => $program->is_free ? 'nullable' : 'required|string',
-            'pickup_location' => $program->has_transport ? 'required' : 'nullable',
-            'agree' => 'accepted',
-        ]);
+        $rules = [
+            'transaction_code'       => $program->is_free ? 'nullable' : 'required|string',
+            'payment_date'           => $program->is_free ? 'nullable' : 'required|string', 
+            'receipt_file'           => 'nullable|file|mimes:jpg,png,pdf|max:2048',
+            'pickup_location'        => $program->has_transport ? 'required|in:tehran,karaj' : 'nullable',
 
-        $data['program_id'] = $program->id;
+
+            'guest_name'             => 'nullable|string',
+            'guest_national_id'      => 'nullable|string',
+            'guest_birth_date'       => 'nullable|string',
+            'guest_father_name'      => 'nullable|string',
+            'guest_phone'            => 'nullable|string',
+            'guest_emergency_phone'  => 'nullable|string',
+            'guest_insurance_file'   => 'nullable|file|mimes:jpg,png,pdf|max:2048',
+        ];
+
+        if (!Auth::check()) {
+            $rules = array_merge($rules, [
+                'guest_name'             => 'required|string',
+                'guest_national_id'      => 'required|string',
+                'guest_birth_date'       => 'required|string',
+                'guest_father_name'      => 'required|string',
+                'guest_phone'            => 'required|string',
+                'guest_emergency_phone'  => 'required|string',
+                'guest_insurance_file'   => 'required|file|mimes:jpg,png,pdf|max:2048',
+            ]);
+        }
+
+        $data = $request->validate($rules);
+
+        if (!$program->is_free && !empty($data['payment_date'])) {
+            $shamsi = $this->toEnglishDigits($data['payment_date']);    
+            $data['payment_date'] = Jalalian::fromFormat('Y/m/d', $shamsi)
+                ->toCarbon()
+                ->toDateString(); 
+        } else {
+            $data['payment_date']   = null;
+            $data['transaction_code'] = null;
+            $data['receipt_file']   = null;
+        }
+
+        if ($request->hasFile('receipt_file')) {
+            $data['receipt_file'] = $request->file('receipt_file')->store('receipts/programs', 'public');
+        }
+        if ($request->hasFile('guest_insurance_file')) {
+            $data['guest_insurance_file'] = $request->file('guest_insurance_file')->store('insurances/guests', 'public');
+        }
+        if ($program->has_transport) {
+            $data['pickup_location'] = in_array($request->pickup_location, ['tehran','karaj'], true)
+                ? $request->pickup_location
+                : null; 
+        } else {
+            $data['pickup_location'] = null;
+        }
+
+
+        $data['type']       = 'program';      
+        $data['related_id'] = $program->id;  
+        
+        unset($data['program_id']);
 
         if (Auth::check()) {
             $data['user_id'] = Auth::id();
-        } else {
-            $data['guest_name'] = $request->guest_name;
-            $data['guest_phone'] = $request->guest_phone;
-            $data['guest_national_id'] = $request->guest_national_id;
+            $data['guest_name']            = null;
+            $data['guest_phone']           = null;
+            $data['guest_national_id']     = null;
+            $data['guest_birth_date']      = null;
+            $data['guest_father_name']     = null;
+            $data['guest_emergency_phone'] = null;
         }
 
-        ProgramRegistration::create($data);
+        // چک تکراری با اسکیمای جدید
+        $already = Auth::check()
+            ? \App\Models\Registration::where('type','program')
+                ->where('related_id', $program->id)
+                ->where('user_id', Auth::id())
+                ->exists()
+            : \App\Models\Registration::where('type','program')
+                ->where('related_id', $program->id)
+                ->where('guest_national_id', $this->toEnglishDigits($request->guest_national_id))
+                ->exists();
 
-        return redirect()->route('programs.show', $program->id)->with('success', 'ثبت‌نام شما با موفقیت انجام شد. پس از تأیید اطلاع‌رسانی خواهد شد.');
+        if ($already) {
+            return back()->with('error', 'قبلاً در این برنامه ثبت‌نام کرده‌اید.');
+        }
+
+        Registration::create($data);
+
+        return redirect()
+            ->route('programs.show', $program->id)
+            ->with('success', 'ثبت‌نام شما با موفقیت انجام شد. پس از تأیید اطلاع‌رسانی خواهد شد.');
+    }
+
+    private function toEnglishDigits(string $str): string
+    {
+        $persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹','٫','،'];
+        $latin   = ['0','1','2','3','4','5','6','7','8','9','. ', ','];
+        return str_replace($persian, $latin, $str);
     }
 
     public function CourseStore(Request $request, Course $course)
     {
-        $data = $request->validate([
-            'transaction_code' => $course->cost ? 'required|string' : 'nullable|string',
-            'receipt_file' => 'nullable|file|max:2048',
-        ]);
+        $isFree = (property_exists($course, 'is_free') && $course->is_free)
+            || (isset($course->cost) && (int)$course->cost === 0);
 
-        if ($course->capacity && $course->users()->count() >= $course->capacity) {
-            return redirect()->back()->with('error', 'ظرفیت این دوره تکمیل شده است.');
+        $rules = [
+            'transaction_code'       => $isFree ? 'nullable' : 'required|string',
+            'payment_date'           => $isFree ? 'nullable' : 'required|string', // از فرم شمسی می‌آید
+            'receipt_file'           => 'nullable|file|mimes:jpg,png,pdf|max:2048',
+
+            'guest_name'             => 'nullable|string',
+            'guest_national_id'      => 'nullable|string',
+            'guest_birth_date'       => 'nullable|string',
+            'guest_father_name'      => 'nullable|string',
+            'guest_phone'            => 'nullable|string',
+            'guest_emergency_phone'  => 'nullable|string',
+            'guest_insurance_file'   => 'nullable|file|mimes:jpg,png,pdf|max:2048',
+        ];
+
+        if (!Auth::check()) {
+            $rules = array_merge($rules, [
+                'guest_name'             => 'required|string',
+                'guest_national_id'      => 'required|string',
+                'guest_birth_date'       => 'required|string',
+                'guest_father_name'      => 'required|string',
+                'guest_phone'            => 'required|string',
+                'guest_emergency_phone'  => 'required|string',
+                'guest_insurance_file'   => 'required|file|mimes:jpg,png,pdf|max:2048',
+            ]);
+        }
+
+        $data = $request->validate($rules);
+
+        if (!$isFree && !empty($data['payment_date'])) {
+            $shamsi = $this->toEnglishDigits($data['payment_date']);
+            $data['payment_date'] = Jalalian::fromFormat('Y/m/d', $shamsi)
+                ->toCarbon()
+                ->toDateString(); 
+        } else {
+            $data['payment_date']    = null;
+            $data['transaction_code'] = null;
+            $data['receipt_file']    = null;
         }
 
         if ($request->hasFile('receipt_file')) {
             $data['receipt_file'] = $request->file('receipt_file')->store('receipts/courses', 'public');
         }
+        if ($request->hasFile('guest_insurance_file')) {
+            $data['guest_insurance_file'] = $request->file('guest_insurance_file')->store('insurances/guests', 'public');
+        }
 
-        $data['user_id'] = Auth::id();
-        $data['course_id'] = $course->id;
+        $data['type']            = 'course';
+        $data['related_id']      = $course->id;
+        $data['payment_id']      = null;
+        $data['pickup_location'] = null; 
 
-        CourseRegistration::create($data);
+        if (Auth::check()) {
+            $data['user_id'] = Auth::id();
+            $data['guest_name'] = $data['guest_phone'] = $data['guest_national_id'] =
+            $data['guest_birth_date'] = $data['guest_father_name'] =
+            $data['guest_emergency_phone'] = null;
+        }
 
-        return redirect()->route('courses.show', $course->id)->with('success', 'ثبت‌نام شما انجام شد. در انتظار تأیید ادمین.');
+        $already = Auth::check()
+            ? Registration::where('type', 'course')
+                ->where('related_id', $course->id)
+                ->where('user_id', Auth::id())
+                ->exists()
+            : Registration::where('type', 'course')
+                ->where('related_id', $course->id)
+                ->where('guest_national_id', $this->toEnglishDigits($request->guest_national_id))
+                ->exists();
+
+        if ($already) {
+            return back()->with('error', 'قبلاً در این دوره ثبت‌نام کرده‌اید.');
+        }
+
+        if (isset($course->capacity) && (int)$course->capacity > 0) {
+            $regCount = Registration::where('type', 'course')
+                ->where('related_id', $course->id)
+                ->count();
+
+            if ($regCount >= (int)$course->capacity) {
+                return back()->with('error', 'ظرفیت این دوره تکمیل شده است.');
+            }
+        }
+
+        Registration::create($data);
+
+        return redirect()
+            ->route('courses.show', $course->id)
+            ->with('success', 'ثبت‌نام شما با موفقیت انجام شد. پس از تأیید اطلاع‌رسانی خواهد شد.');
     }
 
     public function index()

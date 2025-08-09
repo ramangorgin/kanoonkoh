@@ -12,11 +12,14 @@ class CreateRegistrationsTable extends Migration
             $table->id();
 
             // عمومی
-            $table->unsignedBigInteger('user_id')->nullable(); // اگر عضو نیست، null میشه
-            $table->string('type'); // course یا program
+            $table->unsignedBigInteger('user_id')->nullable(); 
+            $table->string('type');
             $table->unsignedBigInteger('related_id');
             $table->unsignedBigInteger('payment_id')->nullable();
-            $table->enum('ride_location', ['tehran', 'karaj'])->nullable();
+            $table->date('payment_date')->nullable();
+            $table->string('transaction_code')->nullable();
+            $table->string('receipt_file')->nullable();
+            $table->enum('pickup_location', ['tehran', 'karaj'])->nullable();
 
             // مهمان
             $table->string('guest_name')->nullable();

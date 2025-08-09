@@ -35,13 +35,11 @@ Route::view('/conditions', 'conditions')->name('conditions');
 //general Programs
 Route::get('/programs', [ProgramController::class, 'archive'])->name('programs.archive');
 Route::get('/programs/{program}', [ProgramController::class, 'show'])->name('programs.show');
-Route::middleware('auth')->post('/programs/{program}/register', [RegistrationController::class, 'ProgramStore'])->name('programs.register');
 
 
 //general Courses
 Route::get('/courses', [CourseController::class, 'archive'])->name('courses.archive');
 Route::get('/courses/{course}', [CourseController::class, 'show'])->name('courses.show');
-Route::middleware('auth')->post('/courses/{course}/register', [RegistrationController::class, 'CourseStore'])->name('courses.register');
 
 //general Reports
 Route::get('/reports', [ReportController::class, 'archive'])->name('reports.archive');

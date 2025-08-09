@@ -10,7 +10,9 @@
 @endsection
 
 @section('content')
-
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
     <div id="first-section" class="container mt-3">
         <div class="row">
             <div class="col-md-6 col-sm-12">

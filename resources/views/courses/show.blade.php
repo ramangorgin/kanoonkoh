@@ -34,8 +34,6 @@
     </div>
 </div>
 
-<div id="map_place" class="mb-4 rounded" style="height: 300px;"></div>
-
 <div class="mb-4">
     <i class="bi bi-people h5"></i>
     <strong> ظرفیت:</strong> {{ $course->capacity }}
@@ -114,6 +112,12 @@
             <div>ثبت‌نام برای این برنامه بسته شده است.</div>
         </div>
     @endif
+</div>
+
+<div class="mt-5 text-center">
+    <a href="{{ route('registrations.course.create', $course->id) }}" class="btn btn-primary btn-lg">
+        <i class="bi bi-pencil-square me-2"></i> ثبت‌نام در دوره
+    </a>
 </div>
 
 @auth

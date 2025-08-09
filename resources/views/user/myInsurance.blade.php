@@ -77,7 +77,7 @@ $(document).ready(function() {
     // تقویم شمسی برای issued_at
     $('#issued_at').persianDatepicker({
         format: 'YYYY/MM/DD',
-        initialValue: false, // ❗ مانع مقداردهی خودکار
+        initialValue: false,
         initialValueType: 'persian',
         autoClose: true,
         observer: true,
@@ -89,7 +89,7 @@ $(document).ready(function() {
     // تقویم شمسی برای expires_at
     $('#expires_at').persianDatepicker({
         format: 'YYYY/MM/DD',
-        initialValue: false, // ❗ مانع مقداردهی خودکار
+        initialValue: false, 
         initialValueType: 'persian',
         autoClose: true,
         observer: true,

@@ -8,6 +8,9 @@ class CreateReportUserRolesTable extends Migration
 {
     public function up()
     {
+        if (\Illuminate\Support\Facades\Schema::hasTable('report_user_roles')) {
+            return; // جدول هست، ایجادش را رد کن
+        }
         Schema::create('report_user_roles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('report_id')->constrained()->onDelete('cascade');

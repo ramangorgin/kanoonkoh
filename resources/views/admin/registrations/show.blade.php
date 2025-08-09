@@ -3,7 +3,7 @@
 @section('content')
 <div class="container mt-4">
 
-    <h4>لیست ثبت‌نامی‌ها برای {{ $title }}</h4>
+    <h4>لیست ثبت‌نامی‌ها برای برنامه/دوره</h4>
 
     {{-- فیلتر وضعیت تایید --}}
     <form method="GET" class="form-inline mb-3">
