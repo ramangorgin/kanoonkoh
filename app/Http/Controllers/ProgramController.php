@@ -8,6 +8,7 @@ use App\Models\Program;
 use App\Models\ProgramUserRole;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class ProgramController extends Controller
 {
@@ -34,16 +35,16 @@ class ProgramController extends Controller
         $program = Program::findOrFail($id);
         $user = auth()->user();
 
-        // آیا کاربر در برنامه ثبت‌نام کرده؟
-        $userHasParticipated = $program->registrations()
-        ->where('user_id', $user->id)
-        ->exists();
+        $userHasParticipated = Auth::check()
+        ? $program->registrations()->where('user_id', Auth::id())->exists()
+        : false;
 
 
         // آیا فرم نظرسنجی پر کرده؟
-        $userHasSubmittedSurvey = $program->surveys()
-            ->where('user_id', $user->id)
-            ->exists();
+        $userHasSubmittedSurvey = Auth::check()
+        ? $program->surveys()->where('user_id', Auth::id())->exists()
+        : false;
+
 
         return view('programs.show', compact(
             'program',
