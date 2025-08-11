@@ -13,6 +13,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Morilog\Jalali\Jalalian;
+use Carbon\Carbon;
 
 
 class RegistrationController extends Controller
@@ -140,13 +141,6 @@ class RegistrationController extends Controller
             ->with('success', 'ثبت‌نام شما با موفقیت انجام شد. پس از تأیید اطلاع‌رسانی خواهد شد.');
     }
 
-    private function toEnglishDigits(string $str): string
-    {
-        $persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹','٫','،'];
-        $latin   = ['0','1','2','3','4','5','6','7','8','9','. ', ','];
-        return str_replace($persian, $latin, $str);
-    }
-
     public function CourseStore(Request $request, Course $course)
     {
         $isFree = (property_exists($course, 'is_free') && $course->is_free)
@@ -249,86 +243,175 @@ class RegistrationController extends Controller
         return view('admin.registrations.index', compact('programs', 'courses'));
     }
 
+ 
     public function show(Request $request, $type, $id)
     {
-        if (!in_array($type, ['program', 'course'])) {
+        if (!in_array($type, ['program', 'course'], true)) {
             abort(404);
         }
 
         $model = $type === 'program' ? Program::findOrFail($id) : Course::findOrFail($id);
 
-       $registrations = Registration::with('user')
+        $query = Registration::with(['user.profile']) // ← پروفایل هم لود می‌شود
             ->where('type', $type)
-            ->where('related_id', $id)
-            ->when($request->has('filter'), function ($query) use ($request) {
-                if ($request->filter === 'approved') {
-                    $query->where('is_approved', true);
-                } elseif ($request->filter === 'rejected') {
-                    $query->where('is_approved', false);
-                }
-            })
-            ->when($request->has('search'), function ($query) use ($request) {
-                $query->whereHas('user', function ($q) use ($request) {
-                    $q->where('first_name', 'like', "%{$request->search}%")
-                    ->orWhere('last_name', 'like', "%{$request->search}%");
-                });
-            })
-            ->get();
+            ->where('related_id', $id);
 
+        // وضعیت تأیید
+        if ($request->filled('approved') && in_array($request->approved, ['0','1'], true)) {
+            $query->where('approved', (bool) $request->approved);
+        }
+
+        // محل سوارشو
+        if ($request->filled('pickup_location') && in_array($request->pickup_location, ['tehran','karaj'], true)) {
+            $query->where('pickup_location', $request->pickup_location);
+        }
+
+        // جستجو: first_name/last_name در profiles است
+        if ($request->filled('q')) {
+            $q = trim($request->q);
+            $query->where(function ($qq) use ($q) {
+                $qq->whereHas('user.profile', function ($p) use ($q) {
+                        $p->where('first_name', 'like', "%{$q}%")
+                        ->orWhere('last_name',  'like', "%{$q}%");
+                    })
+                ->orWhereHas('user', function ($u) use ($q) { // برای ایمیل هنوز روی users
+                        $u->where('email', 'like', "%{$q}%");
+                    })
+                ->orWhere('guest_name',        'like', "%{$q}%")
+                ->orWhere('guest_phone',       'like', "%{$q}%")
+                ->orWhere('guest_national_id', 'like', "%{$q}%")
+                ->orWhere('transaction_code',  'like', "%{$q}%");
+            });
+        }
+
+        // بازه تاریخ پرداخت (شمسی)
+        [$from, $to] = [$request->input('from'), $request->input('to')];
+        if ($from || $to) {
+            if ($from) {
+                $fromEn = $this->toEnglishDigits($from);
+                try {
+                    $fromDate = Jalalian::fromFormat('Y/m/d', $fromEn)->toCarbon()->startOfDay();
+                    $query->whereDate('payment_date', '>=', $fromDate->toDateString());
+                } catch (\Throwable $e) {}
+            }
+            if ($to) {
+                $toEn = $this->toEnglishDigits($to);
+                try {
+                    $toDate = Jalalian::fromFormat('Y/m/d', $toEn)->toCarbon()->endOfDay();
+                    $query->whereDate('payment_date', '<=', $toDate->toDateString());
+                } catch (\Throwable $e) {}
+            }
+        }
+
+        $registrations = $query->latest()->paginate(20)->withQueryString();
 
         return view('admin.registrations.show', [
-            'type' => $type,
-            'model' => $model,
+            'type'          => $type,
+            'model'         => $model,
             'registrations' => $registrations,
         ]);
     }
 
+
     public function approve(Registration $registration)
     {
-        $registration->update(['is_approved' => true]);
-        return back()->with('success', 'ثبت‌نام تایید شد.');
+        $registration->update(['approved' => true]);
+        return back()->with('success', 'ثبت‌نام تأیید شد.');
     }
+
 
     public function reject(Registration $registration)
     {
-        $registration->update(['is_approved' => false]);
-        return back()->with('error', 'ثبت‌نام رد شد.');
+        $registration->update(['approved' => false]);
+        return back()->with('success', 'ثبت‌نام رد شد.');
     }
 
     public function export($type, $id, Request $request)
     {
-        if (!in_array($type, ['program', 'course'])) {
+        if (!in_array($type, ['program', 'course'], true)) {
             abort(404);
         }
 
-        $approved = $request->input('filter') === 'approved';
-        $filename = $type . "_{$id}_" . ($approved ? 'approved' : 'rejected') . "_registrations.xlsx";
+        // ساخت همان query که در show استفاده شد (تا خروجی و لیست همسان باشند)
+        $query = Registration::with('user')
+            ->where('type', $type)
+            ->where('related_id', $id);
 
-        return Excel::download(new RegistrationsExport($type, $id, $approved), $filename);
+        if ($request->filled('approved') && in_array($request->approved, ['0','1'], true)) {
+            $query->where('approved', (bool) $request->approved);
+        }
+        if ($request->filled('pickup_location') && in_array($request->pickup_location, ['tehran','karaj'], true)) {
+            $query->where('pickup_location', $request->pickup_location);
+        }
+        if ($request->filled('q')) {
+            $q = trim($request->q);
+            $query->where(function ($qq) use ($q) {
+                $qq->whereHas('user', function ($u) use ($q) {
+                    $u->where('first_name', 'like', "%{$q}%")
+                    ->orWhere('last_name', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%");
+                })
+                ->orWhere('guest_name', 'like', "%{$q}%")
+                ->orWhere('guest_phone', 'like', "%{$q}%")
+                ->orWhere('guest_national_id', 'like', "%{$q}%")
+                ->orWhere('transaction_code', 'like', "%{$q}%");
+            });
+        }
+        [$from, $to] = [$request->input('from'), $request->input('to')];
+        if ($from) {
+            $fromEn = $this->toEnglishDigits($from);
+            try {
+                $fromDate = Jalalian::fromFormat('Y/m/d', $fromEn)->toCarbon()->startOfDay();
+                $query->whereDate('payment_date', '>=', $fromDate->toDateString());
+            } catch (\Throwable $e) {}
+        }
+        if ($to) {
+            $toEn = $this->toEnglishDigits($to);
+            try {
+                $toDate = Jalalian::fromFormat('Y/m/d', $toEn)->toCarbon()->endOfDay();
+                $query->whereDate('payment_date', '<=', $toDate->toDateString());
+            } catch (\Throwable $e) {}
+        }
+
+        // نام فایل بر اساس فیلتر وضعیت
+        $statusPart = $request->filled('approved') ? ($request->approved === '1' ? 'approved' : 'not_approved') : 'all';
+        $filename = "{$type}_{$id}_{$statusPart}_registrations.xlsx";
+
+        // اگر کلاس اکسپورت اختصاصی داری:
+        // return Excel::download(new RegistrationsExport($query->clone()), $filename);
+
+        // در غیر این صورت یک اکسپورت سریع از کوئری (نمونه ساده):
+        $rows = $query->orderByDesc('id')->get()->map(function ($r) {
+            return [
+                'ID'               => $r->id,
+                'Type'             => $r->type,
+                'Related ID'       => $r->related_id,
+                'User ID'          => $r->user_id ?? '',
+                'Guest Name'       => $r->guest_name ?? '',
+                'Guest National ID'=> $r->guest_national_id ?? '',
+                'Guest Phone'      => $r->guest_phone ?? '',
+                'Pickup Location'  => $r->pickup_location ?? '',
+                'Payment Date'     => optional($r->payment_date)->format('Y-m-d'),
+                'Transaction Code' => $r->transaction_code ?? '',
+                'Approved'         => $r->approved ? '1' : '0',
+                'Created At'       => $r->created_at?->format('Y-m-d H:i:s'),
+            ];
+        });
+
+        // ساخت اکسل با Maatwebsite\Excel از آرایه
+        return Excel::download(new class($rows) implements \Maatwebsite\Excel\Concerns\FromArray, \Maatwebsite\Excel\Concerns\WithHeadings {
+            private $rows;
+            public function __construct($rows) { $this->rows = $rows; }
+            public function array(): array { return $this->rows->toArray(); }
+            public function headings(): array { return array_keys($this->rows->first() ?? ['No Data' => '']); }
+        }, $filename);
     }
 
-
-    public function exportPdf($type, $id, Request $request)
+    private function toEnglishDigits(string $str): string
     {
-        if (!in_array($type, ['program', 'course'])) {
-            abort(404);
-        }
-
-        $approved = $request->input('filter') === 'approved';
-
-        $registrations = Registration::with(['user.profile'])
-            ->where('type', $type)
-            ->where('type_id', $id)
-            ->where('approved', $approved)
-            ->get();
-
-        $pdf = Pdf::loadView('admin.registrations.export-pdf', [
-            'registrations' => $registrations,
-            'approved' => $approved,
-        ])->setPaper('a4', 'landscape');
-
-        $filename = $type . "_{$id}_" . ($approved ? 'approved' : 'rejected') . "_registrations.pdf";
-        return $pdf->download($filename);
+        $persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹','٫','،'];
+        $latin   = ['0','1','2','3','4','5','6','7','8','9','. ', ','];
+        return str_replace($persian, $latin, $str);
     }
 
 }

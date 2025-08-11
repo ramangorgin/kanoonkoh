@@ -138,7 +138,7 @@ Route::prefix('admin')->name('admin.')->middleware(['web', 'auth'])->group(funct
     Route::get('registrations/{type}/{id}', [RegistrationController::class, 'show'])->name('registrations.show');
     Route::post('registrations/{registration}/approve', [RegistrationController::class, 'approve'])->name('registrations.approve');
     Route::post('registrations/{registration}/reject', [RegistrationController::class, 'reject'])->name('registrations.reject');
-    Route::get('registrations/{type}/{id}/export', [RegistrationController::class, 'export'])->name('registrations.export');
+    Route::get('registrations/export/{type}/{id}', [RegistrationController::class, 'export'])->name('registrations.export');
     Route::get('registrations/export-pdf/{type}/{id}', [RegistrationController::class, 'exportPdf'])->name('registrations.exportPdf');
 
 
