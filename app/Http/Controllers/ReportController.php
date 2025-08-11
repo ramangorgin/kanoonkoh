@@ -31,6 +31,14 @@ class ReportController extends Controller
         return view('user.myReports', compact('reports'));
     }
 
+
+    public function AdminIndex()
+    {
+        $reports = Report::latest()->paginate(20);
+
+        return view('reports.index', compact('reports'));
+    }
+
     public function show($id)
     {
         $report = Report::with(['user', 'program'])->findOrFail($id);

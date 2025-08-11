@@ -143,8 +143,15 @@ Route::prefix('admin')->name('admin.')->middleware(['web', 'auth'])->group(funct
 
 
     // گزارش‌ها
-    Route::resource('reports', ReportController::class);
-
+    Route::get('/reports', [ReportController::class, 'Adminindex'])->name('reports.index');
+    Route::get('/reports/create', [ReportController::class, 'create'])->name('reports.create');
+    Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
+    Route::get('/reports/{report}', [ReportController::class, 'show'])->name('reports.show');
+    Route::get('/reports/{report}/edit', [ReportController::class, 'edit'])->name('reports.edit');
+    Route::put('/reports/{report}', [ReportController::class, 'update'])->name('reports.update');
+    Route::delete('/reports/{report}', [ReportController::class, 'destroy'])->name('reports.destroy');
+    Route::post('/reports/{report}/approve', [ReportController::class, 'approve'])->name('reports.approve');
+    Route::post('/reports/{report}/reject',  [ReportController::class, 'reject'])->name('reports.reject');
 
     // نظرسنجی‌ها
     Route::get('surveys/courses', [SurveyController::class, 'courseIndex'])->name('surveys.courses');
