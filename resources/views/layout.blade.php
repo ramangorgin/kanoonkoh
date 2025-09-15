@@ -49,8 +49,7 @@
                         <a href="{{ route('dashboard.index') }}" class="btn btn-outline-secondary py-3 px-5">داشبورد</a>
                         @else
                         <div class="row">
-                            <div class="col-md-6"><a href="{{ route('login') }}" class="btn btn-outline-primary ms-2" style="width: 70px;"> ورود </a></div>
-                            <div class="col-md-6"> <a href="{{ route('register') }}" class="btn btn-primary" style="width: 80px;">ثبت‌نام</a></div>
+                            <div class="col-md-6"><a href="{{ route('auth.phone') }}" class="btn btn-primary ms-2" style="width: 150px;"> ورود | ثبت‌نام </a></div>
                         </div>
                         @endauth
                     </div>
@@ -82,8 +81,7 @@
                     @auth
                         <a href="{{ route('dashboard.index') }}" class="btn btn-outline-secondary w-100 mb-2">ورود به داشبورد</a>
                     @else
-                        <a href="{{ route('login') }}" class="btn btn-outline-primary w-100 mb-2">ورود</a>
-                        <a href="{{ route('register') }}" class="btn btn-primary w-100">ثبت‌نام</a>
+                        <a href="{{ route('auth.phone') }}" class="btn btn-primary w-100 mb-2">ورود | ثبت‌نام</a>
                     @endauth
                 </div>
             </div>

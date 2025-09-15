@@ -9,9 +9,6 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\ReportController;
 
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Auth\RegisterController;
-
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\InsuranceController;
@@ -24,13 +21,34 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\UserController;
 
-
-
+use App\Http\Controllers\AuthController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::view('/conditions', 'conditions')->name('conditions');
 
+// Login
+// ==========================
+Route::get('/auth/phone', [AuthController::class, 'showPhoneForm'])->name('auth.phone');
+Route::post('/auth/phone', [AuthController::class, 'requestOtp'])->name('auth.requestOtp');
+
+Route::get('/auth/verify', [AuthController::class, 'showVerifyForm'])->name('auth.verifyForm');
+Route::post('/auth/verify', [AuthController::class, 'verifyOtp'])->name('auth.verifyOtp');
+// ==========================
+
+// Sign-Up Wizard
+// ==========================
+Route::get('/auth/register/step1', [AuthController::class, 'showRegisterStep1'])->name('auth.register.step1');
+Route::post('/auth/register/step1', [AuthController::class, 'storeRegisterStep1'])->name('auth.register.storeStep1');
+
+Route::get('/auth/register/step2', [AuthController::class, 'showRegisterStep2'])->name('auth.register.step2');
+Route::post('/auth/register/step2', [AuthController::class, 'storeRegisterStep2'])->name('auth.register.storeStep2');
+
+Route::get('/auth/register/step3', [AuthController::class, 'showRegisterStep3'])->name('auth.register.step3');
+Route::post('/auth/register/step3', [AuthController::class, 'storeRegisterStep3'])->name('auth.register.storeStep3');
+
+Route::get('/auth/register/complete', [AuthController::class, 'registerComplete'])->name('auth.register.complete');
+// ==========================
 
 //general Programs
 Route::get('/programs', [ProgramController::class, 'archive'])->name('programs.archive');
@@ -46,11 +64,7 @@ Route::get('/reports', [ReportController::class, 'archive'])->name('reports.arch
 Route::get('/reports/{id}', [ReportController::class, 'show'])->name('reports.show');
 
 //User Authentication routes:
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [LoginController::class, 'login']);
-Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
-Route::post('/register', [RegisterController::class, 'register']);
-Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+Route::get('/login', [LoginController::class, 'login'])->name('login');
 
 Route::get('/sitemap.xml', [App\Http\Controllers\SitemapController::class, 'index']);
 

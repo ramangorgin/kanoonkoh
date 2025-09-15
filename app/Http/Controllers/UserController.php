@@ -9,37 +9,11 @@ use App\Models\Profile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
+
 
 class UserController extends Controller
 {
-
-    public function addCertificate(Request $request, $userId)
-    {
-        $request->validate([
-            'course_name' => 'required|string|max:255',
-            'instructor' => 'nullable|string|max:255',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date',
-            'certificate_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-        ]);
-
-        $path = null;
-        if ($request->hasFile('certificate_file')) {
-            $path = $request->file('certificate_file')->store('certificates', 'public');
-        }
-
-        \App\Models\UserCourseCertificate::create([
-            'user_id' => $userId,
-            'course_name' => $request->course_name,
-            'instructor' => $request->instructor,
-            'start_date' => $request->start_date,
-            'end_date' => $request->end_date,
-            'certificate_path' => $path,
-        ]);
-
-        return back()->with('success', 'دوره با موفقیت ثبت شد.');
-    }
-
     public function index(Request $request)
     {
         $query = User::with('profile');
@@ -106,34 +80,82 @@ class UserController extends Controller
         $user = User::with('profile')->findOrFail($id);
 
         $validated = $request->validate([
-            'email' => ['required','email', Rule::unique('users')->ignore($user->id)],
-            'password' => 'nullable|min:6',
-            'role' => ['required', Rule::in(['admin', 'user'])],
-            'first_name' => 'required|string|max:100',
-            'last_name' => 'required|string|max:100',
-            'personal_photo' => 'nullable|image|max:2048',
+            'email'          => ['required','email', Rule::unique('users')->ignore($user->id)],
+            'password'       => ['nullable','min:6'],
+            'role'           => ['required', Rule::in(['admin', 'user'])],
+
+            // فیلدهای پروفایل
+            'first_name'     => ['required','string','max:100'],
+            'last_name'      => ['required','string','max:100'],
+            'gender'         => ['nullable','in:male,female'],
+            'birth_date'     => ['nullable','string'],
+            'father_name'    => ['nullable','string','max:100'],
+            'national_id'    => ['nullable','string','max:20'],
+            'phone'          => ['nullable','string','max:20'],
+            'province'       => ['nullable','string','max:100'],
+            'city'           => ['nullable','string','max:100'],
+            'postal_code'    => ['nullable','string','max:20'],
+            'address'        => ['nullable','string','max:500'],
+            'height'         => ['nullable','numeric'],
+            'weight'         => ['nullable','numeric'],
+            'blood_type'     => ['nullable','in:A+,A-,B+,B-,AB+,AB-,O+,O-'],
+            'has_surgery'    => ['nullable','in:0,1'],
+            'physical_condition' => ['nullable','string','max:255'],
+            'allergies'      => ['nullable','string','max:255'],
+            'medications'    => ['nullable','string','max:255'],
+            'job'            => ['nullable','string','max:100'],
+            'referrer'       => ['nullable','string','max:100'],
+            'emergency_phone'=> ['nullable','string','max:20'],
+            'emergency_contact_name'      => ['nullable','string','max:100'],
+            'emergency_contact_relation'  => ['nullable','string','max:100'],
+
+            // فایل
+            'personal_photo' => ['nullable','image','mimes:jpg,jpeg,png','max:2048'],
         ]);
 
-        $user->email = $request->email;
-        if ($request->filled('password')) {
-            $user->password = Hash::make($request->password);
-        }
-        $user->role = $request->role;
-        $user->save();
-
-        $profile = $user->profile;
-        $profile->fill($request->except(['email', 'password', 'role']));
-
-        if ($request->hasFile('personal_photo')) {
-            if ($profile->personal_photo) {
-                Storage::disk('public')->delete($profile->personal_photo);
+        DB::beginTransaction();
+        try {
+            // بروزرسانی user
+            $user->email = $validated['email'];
+            $user->role  = $validated['role'];
+            if (!empty($validated['password'])) {
+                $user->password = Hash::make($validated['password']);
             }
-            $profile->personal_photo = $request->file('personal_photo')->store('photos', 'public');
+            $user->save();
+
+            // اطمینان از وجود پروفایل
+            $profile = $user->profile ?? new Profile(['user_id' => $user->id]);
+
+            // داده‌های پروفایل را به‌صورت امن انتخاب کن
+            $profileData = $request->only([
+                'first_name','last_name','gender','birth_date','father_name','national_id',
+                'phone','province','city','postal_code','address',
+                'height','weight','blood_type','has_surgery','physical_condition','allergies',
+                'medications','job','referrer','emergency_phone','emergency_contact_name','emergency_contact_relation',
+            ]);
+            $profile->fill($profileData);
+
+            // اگر عکس جدید آپلود شد
+            if ($request->hasFile('personal_photo')) {
+                // حذف فایل قبلی (اگر هست)
+                if (!empty($profile->personal_photo)) {
+                    Storage::disk('public')->delete($profile->personal_photo);
+                }
+                // ذخیره فایل جدید
+                $profile->personal_photo = $request->file('personal_photo')->store('photos', 'public');
+            }
+
+            $profile->save();
+
+            DB::commit();
+            return redirect()
+                ->route('admin.users.index')
+                ->with('success', 'کاربر با موفقیت ویرایش شد.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            report($e);
+            return back()->withErrors(['general' => 'خطایی رخ داد. لطفاً دوباره تلاش کنید.'])->withInput();
         }
-
-        $profile->save();
-
-        return redirect()->route('admin.users.index')->with('success', 'کاربر با موفقیت ویرایش شد.');
     }
 
     public function destroy($id)

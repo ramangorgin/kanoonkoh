@@ -11,17 +11,18 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $fillable = [
-        'first_name', 'last_name', 'membership_level',
-        'membership_date', 'score', 'avatar',
-        'email', 'password'
+        'phone', 'otp_code', 'otp_expires_at', 'role'
     ];
 
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    public function profile()
+    {
+        return $this->hasOne(Profile::class);
+    }
 
-  
+    public function insurance()
+    {
+        return $this->hasOne(Insurance::class);
+    }
 
     public function Admin()
     {
@@ -32,13 +33,11 @@ class User extends Authenticatable
         return $this->hasMany(ProgramUserRole::class);
     }
 
-
     public function getFullNameAttribute()
     {
         return optional($this->profile)->first_name . ' ' . optional($this->profile)->last_name;
     }
     
-
     protected static function booted()
     {
         static::created(function ($user) {
@@ -51,16 +50,6 @@ class User extends Authenticatable
     public function programParticipations()
     {
         return $this->hasMany(UserProgramParticipation::class);
-    }
-
-    public function profile()
-    {
-        return $this->hasOne(Profile::class);
-    }
-
-    public function insurance()
-    {
-        return $this->hasOne(Insurance::class);
     }
 
     public function payments()
