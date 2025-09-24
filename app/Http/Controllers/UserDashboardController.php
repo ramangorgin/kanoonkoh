@@ -8,18 +8,23 @@ use App\Models\Notification;
 
 class UserDashboardController extends Controller
 {
+
     public function index()
     {
-        $user = Auth::user();
+        $user = Auth::user()->load([
+            'profile',
+            'medicalRecord',
+            'enrollments.course', 
+        ]);
 
         return view('user.myDashboard', [
-            'user' => Auth::user()->load('profile'),
-            'needsCompletion' => !$user->profile || !$user->profile->first_name,
-            'programs' => $user->programs()->latest()->get(),
-            'courses' => $user->courses()->latest()->get(),
-            'reports' => $user->reports()->latest()->get(),
+            'user' => $user,
+            'profile' => $user->profile,
+            'medicalRecord' => $user->medicalRecord,
+            'educationalHistories' => $user->enrollments,
         ]);
     }
+
     public function profile()
     {
         return view('user.myProfile');

@@ -14,14 +14,32 @@ class User extends Authenticatable
         'phone', 'otp_code', 'otp_expires_at', 'role'
     ];
 
+    public function isRegistrationComplete()
+    {
+        return $this->profile 
+            && $this->medicalRecord 
+            && $this->educationalHistories()->exists();
+    }
+
+
     public function profile()
     {
         return $this->hasOne(Profile::class);
     }
 
-    public function insurance()
+    public function medicalRecord()
     {
-        return $this->hasOne(Insurance::class);
+        return $this->hasOne(MedicalRecord::class);
+    }
+
+    public function educationalHistories()
+    {
+        return $this->hasMany(EducationalHistory::class);
+    }
+
+    public function enrollments()
+    {
+        return $this->hasMany(Enrollment::class);
     }
 
     public function Admin()

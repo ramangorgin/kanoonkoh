@@ -25,4 +25,36 @@
         </form>
     </div>
 </div>
+
+@push('scripts')
+<script>
+// Normalizing the Number
+function normalizeDigits(str) {
+    const persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+    const arabic  = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+    let output = str;
+    for (let i = 0; i < 10; i++) {
+        output = output.replace(new RegExp(persian[i], 'g'), i)
+                       .replace(new RegExp(arabic[i], 'g'), i);
+    }
+    return output;
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    const phoneInput = document.querySelector('input[name="phone"]');
+    const form = phoneInput.closest('form');
+
+    // موقع تایپ: اعداد رو اصلاح کن
+    phoneInput.addEventListener('input', function() {
+        this.value = normalizeDigits(this.value);
+    });
+
+    // قبل از ارسال فرم هم یکبار اصلاح کن
+    form.addEventListener('submit', function() {
+        phoneInput.value = normalizeDigits(phoneInput.value);
+    });
+});
+</script>
+
+@endpush
 @endsection

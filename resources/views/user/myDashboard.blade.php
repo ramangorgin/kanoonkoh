@@ -17,38 +17,26 @@
 
 
 <div class="container py-4">
-    {{-- نمایش پیام خوش‌آمدگویی و درخواست تکمیل پروفایل --}}
-    @if($needsCompletion)
-        <div class="alert alert-warning">
-            <h5 class="mb-2" style="font-family: Vazirmatn;" >کاربر گرامی، عضویت شما هنوز کامل نشده است</h5>
-            <ul class="mb-0">
-                <li>لطفاً <a href="{{ route('dashboard.profile') }}">مشخصات کاربری</a> خود را کامل کنید.</li>
-                <li> <a href="{{ route('dashboard.insurance') }}">بیمه ورزشی</a> خود را بارگذاری نمایید.</li>
-                <li> <a href="{{ route('dashboard.payments') }}">حق عضویت سال جاری</a> را پرداخت نمایید.</li>
-            </ul>
-        </div>
-    @endif
 
     {{-- اطلاعات کلی کاربر، فقط وقتی عضویت تکمیل شده باشد --}}
-    @if (!$needsCompletion)
-        <div class="card mb-4">
-            <div class="card-body d-flex align-items-center">
-                <img src="{{ $user->profile && $user->profile->personal_photo ? asset('storage/' . $user->profile->personal_photo) : asset('images/default-avatar.png') }}" alt="عکس کاربر" class="img-thumbnail me-3" style="max-height: 120px;">
-                <div>
-                    <h5 style="font-family: Vazirmatn;" class="mb-3">
-                        {{ $user->profile->first_name ?? '' }} {{ $user->profile->last_name ?? '' }}
-                    </h5>
-                    <small class="text-muted mb-2">
-                        وضعیت عضویت: {{ $user->profile->membership_status ?? 'تعریف نشده' }}
-                    </small><br>
-                    <small class="text-muted">
-                        تاریخ عضویت:
-                        {{ $user->profile->membership_date ? jdate($user->profile->membership_date)->format('Y/m/d') : 'تنظیم نشده' }}
-                    </small>
-                </div>
+
+    <div class="card mb-4">
+        <div class="card-body d-flex align-items-center">
+            <img src="{{ $user->profile && $user->profile->personal_photo ? asset('storage/' . $user->profile->personal_photo) : asset('images/default-avatar.png') }}" alt="عکس کاربر" class="img-thumbnail me-3" style="max-height: 120px;">
+            <div>
+                <h5 style="font-family: Vazirmatn;" class="mb-3">
+                    {{ $user->profile->first_name ?? '' }} {{ $user->profile->last_name ?? '' }}
+                </h5>
+                <small class="text-muted mb-2">
+                    وضعیت عضویت: {{ $user->profile->membership_status ?? 'تعریف نشده' }}
+                </small><br>
+                <small class="text-muted">
+                    تاریخ عضویت:
+                    {{ $user->profile->membership_date ? jdate($user->profile->membership_date)->format('Y/m/d') : 'تنظیم نشده' }}
+                </small>
             </div>
         </div>
-    @endif
+    </div>
 
 
 
@@ -66,17 +54,7 @@
             </div>
         </div>
 
-        {{-- بیمه ورزشی --}}
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">بیمه ورزشی</div>
-                <div class="card-body">
-                    <p>وضعیت آخرین بیمه شما:</p>
-                    {{-- اطلاعات بیمه از مدل insurance بارگزاری بشه --}}
-                    <a href="{{ route('dashboard.insurance') }}" class="btn btn-sm btn-outline-primary">مشاهده / ویرایش بیمه</a>
-                </div>
-            </div>
-        </div>
+
 
         {{-- پرداخت‌ها --}}
         <div class="col-md-6">

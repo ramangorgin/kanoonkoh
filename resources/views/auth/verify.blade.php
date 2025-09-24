@@ -1,95 +1,110 @@
 @extends('layout')
 
-@section('title', 'ورود یا ثبت‌نام')
-
 @section('content')
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
-    <div class="card shadow-sm p-4" style="width: 100%; max-width: 500px;">
-        <h4 class="mb-4 text-center">تایید شماره تلفن</h4>
+<div class="container text-center">
 
-        {{-- نمایش خطاها --}}
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-        {{-- پیام وضعیت --}}
-        @if (session('status'))
-            <div class="alert alert-success">
-                {{ session('status') }}
-            </div>
-        @endif
+    <h2 class="mb-4">تأیید شماره تلفن</h2>
+    <p class="text-muted">کد چهاررقمی ارسال شده به شماره شما را وارد کنید</p>
 
-        <form method="POST" action="{{ route('auth.verifyOtp') }}" id="otpForm">
+    <!-- فرم وارد کردن کد -->
+    <form method="POST" action="{{ route('auth.verifyOtp') }}" id="verify-form">
+        @csrf
+        <div class="d-flex justify-content-center gap-2 mb-3" style="direction:ltr">
+            <input type="text"  maxlength="1" class="form-control text-center code-input" style="width:60px; font-size:1.5rem;" required>
+            <input type="text"  maxlength="1" class="form-control text-center code-input" style="width:60px; font-size:1.5rem;" required>
+            <input type="text"  maxlength="1" class="form-control text-center code-input" style="width:60px; font-size:1.5rem;" required>
+            <input type="text"  maxlength="1" class="form-control text-center code-input" style="width:60px; font-size:1.5rem;" required>
+        </div>
+         <input type="hidden" name="otp" id="otpHidden">
+
+        <button type="submit" class="btn btn-success w-50">تأیید</button>
+    </form>
+
+    <!-- شمارش معکوس -->
+    <div class="mt-4">
+        <p class="text-muted">زمان باقی‌مانده: <span id="timer">02:00</span></p>
+        <form method="POST" action="{{ route('auth.requestOtp') }}">
             @csrf
-            <div class="mb-3">
-                <label class="form-label">کد تایید ۴ رقمی را وارد کنید:</label>
-                <div class="d-flex gap-2 justify-content-center">
-                    <input type="text" maxlength="1" class="otp-input form-control text-center"
-                        style="width: 60px; font-size: 24px;" inputmode="numeric" pattern="[0-9]*">
-                    <input type="text" maxlength="1" class="otp-input form-control text-center"
-                        style="width: 60px; font-size: 24px;" inputmode="numeric" pattern="[0-9]*">
-                    <input type="text" maxlength="1" class="otp-input form-control text-center"
-                        style="width: 60px; font-size: 24px;" inputmode="numeric" pattern="[0-9]*">
-                    <input type="text" maxlength="1" class="otp-input form-control text-center"
-                        style="width: 60px; font-size: 24px;" inputmode="numeric" pattern="[0-9]*">
-                </div>
-            </div>
-
-            <input type="hidden" name="otp" id="otpHidden">
-
-
-            <div class="mt-3 text-center">
-                <button type="submit" class="btn btn-success" style="width: 100%;">ارسال</button>
-            </div>
+            <input type="hidden" name="phone" value="{{ session('auth_phone') }}">
+            <button type="submit" id="resend-btn" class="btn btn-outline-primary" disabled>ارسال مجدد</button>
         </form>
     </div>
 </div>
 
+{{-- Scripts --}}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-// تبدیل اعداد فارسی و عربی به انگلیسی
-function normalizeDigits(str) {
-    const persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
-    const arabic  = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
-    const english = ['0','1','2','3','4','5','6','7','8','9'];
-
-    return str.replace(/[۰-۹٠-٩]/g, d => {
-        if (persian.includes(d)) return english[persian.indexOf(d)];
-        if (arabic.includes(d))  return english[arabic.indexOf(d)];
-        return d;
-    });
-}
-
-const inputs = document.querySelectorAll('.otp-input');
-const otpHidden = document.getElementById('otpHidden');
-
-// حرکت بین باکس‌ها و ذخیره کد
-inputs.forEach((input, index) => {
-    input.addEventListener('input', function() {
-        this.value = normalizeDigits(this.value).replace(/[^0-9]/g, '').slice(0, 1);
-
-        if (this.value && index < inputs.length - 1) {
-            inputs[index + 1].focus();
+$(document).ready(function() {
+    // حرکت خودکار بین inputها
+    $('.code-input').on('input', function() {
+        if (this.value.length === this.maxLength) {
+            $(this).next('.code-input').focus();
         }
-
-        // ترکیب همه مقادیر در hidden input
-        otpHidden.value = Array.from(inputs).map(i => i.value).join('');
-    });
-
-    input.addEventListener('keydown', function(e) {
-        if (e.key === "Backspace" && !this.value && index > 0) {
-            inputs[index - 1].focus();
+    }).on('keydown', function(e) {
+        if (e.key === "Backspace" && this.value === "") {
+            $(this).prev('.code-input').focus();
         }
     });
-});
 
-// قبل از ارسال فرم، مطمئن شو hidden مقدار درست داره
-document.getElementById('otpForm').addEventListener('submit', function() {
-    otpHidden.value = Array.from(inputs).map(i => i.value).join('');
+    // شمارش معکوس
+    let duration = 120; // ثانیه
+    let timerDisplay = $('#timer');
+    let resendBtn = $('#resend-btn');
+
+    function startTimer() {
+        let remaining = duration;
+        let interval = setInterval(function() {
+            let minutes = String(Math.floor(remaining / 60)).padStart(2, '0');
+            let seconds = String(remaining % 60).padStart(2, '0');
+            timerDisplay.text(`${minutes}:${seconds}`);
+            if (--remaining < 0) {
+                clearInterval(interval);
+                resendBtn.prop('disabled', false);
+            }
+        }, 1000);
+    }
+
+    startTimer();
 });
 </script>
+
+<script>
+function normalizeDigits(str){
+  const p = '۰۱۲۳۴۵۶۷۸۹', a = '٠١٢٣٤٥٦٧٨٩';
+  return str.replace(/[۰-۹٠-٩]/g, d => {
+    const pi = p.indexOf(d); if (pi > -1) return String(pi);
+    const ai = a.indexOf(d); if (ai > -1) return String(ai);
+    return d;
+  });
+}
+
+const inputs = document.querySelectorAll('.code-input');
+const hidden = document.getElementById('otpHidden');
+
+function fillHidden(){
+  hidden.value = Array.from(inputs).map(i => i.value).join('');
+}
+
+inputs.forEach((el, idx) => {
+  el.addEventListener('input', e => {
+    let v = normalizeDigits(el.value).replace(/[^0-9]/g,'').slice(0,1);
+    el.value = v;
+    if (v && idx < inputs.length - 1) inputs[idx+1].focus();
+    fillHidden();
+  });
+  el.addEventListener('keydown', e => {
+    if (e.key === 'Backspace' && !el.value && idx > 0) inputs[idx-1].focus();
+  });
+});
+
+// قبل از ارسال، مطمئن شو ۴ رقم پر شده
+document.getElementById('verify-form').addEventListener('submit', e => {
+  fillHidden();
+  if (hidden.value.length !== 4) {
+    e.preventDefault();
+    alert('کد ۴ رقمی را کامل وارد کنید');
+  }
+});
+</script>
+
 @endsection

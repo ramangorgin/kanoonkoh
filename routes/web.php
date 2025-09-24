@@ -27,7 +27,7 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::view('/conditions', 'conditions')->name('conditions');
 
-// Login
+// Auth: Login & Register
 // ==========================
 Route::get('/auth/phone', [AuthController::class, 'showPhoneForm'])->name('auth.phone');
 Route::post('/auth/phone', [AuthController::class, 'requestOtp'])->name('auth.requestOtp');
@@ -63,17 +63,6 @@ Route::get('/courses/{course}', [CourseController::class, 'show'])->name('course
 Route::get('/reports', [ReportController::class, 'archive'])->name('reports.archive');
 Route::get('/reports/{id}', [ReportController::class, 'show'])->name('reports.show');
 
-//User Authentication routes:
-Route::get('/login', [LoginController::class, 'login'])->name('login');
-
-Route::get('/sitemap.xml', [App\Http\Controllers\SitemapController::class, 'index']);
-
-
-Route::get('/survey/course', [SurveyController::class, 'courseForm'])->name('surveys.course.form');
-Route::get('/survey/program', [SurveyController::class, 'programForm'])->name('surveys.program.form');
-Route::post('/survey/course', [SurveyController::class, 'submitCourse'])->name('surveys.course.submit');
-Route::post('/survey/program', [SurveyController::class, 'submitProgram'])->name('surveys.program.submit');
-
 
 //User Dashboard routes:
 Route::prefix('dashboard')->name('dashboard.')->middleware('auth')->group(function () {
@@ -87,8 +76,11 @@ Route::prefix('dashboard')->name('dashboard.')->middleware('auth')->group(functi
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
     Route::post('/profile', [ProfileController::class, 'store'])->name('profile.store');
 
-    Route::get('/insurance', [InsuranceController::class, 'show'])->name('insurance');
-    Route::post('/insurance', [InsuranceController::class, 'store'])->name('insurance.store');
+    Route::get('/insurance', [InsuranceController::class, 'show'])->name('medicalRecord');
+    Route::post('/insurance', [InsuranceController::class, 'store'])->name('medicalRecord.store');
+
+    Route::get('/insurance', [InsuranceController::class, 'show'])->name('educationalHistory');
+    Route::post('/insurance', [InsuranceController::class, 'store'])->name('educationalHistory.store');
 
     Route::get('/payments', [PaymentController::class, 'UserIndex'])->name('payments');
     Route::post('/payment', [PaymentController::class, 'store'])->name('payment.store');

@@ -194,13 +194,6 @@
                     <i class="bi bi-house-door-fill me-1"></i> صفحه اصلی
                 </a>
 
-                <!-- خروج از حساب -->
-                <form method="POST" action="{{ route('logout') }}" class="d-none d-lg-inline">
-                    @csrf
-                    <button type="submit" class="btn btn-outline-danger px-3">
-                        <i class="bi bi-box-arrow-right me-1"></i> خروج
-                    </button>
-                </form>
             </div>
 
         </div>
@@ -216,9 +209,7 @@
         <a href="{{ route('dashboard.profile') }}" class="{{ request()->routeIs('dashboard.profile') ? 'active-link' : '' }}">
             <i class="bi bi-person-lines-fill me-2"></i> ویرایش مشخصات
         </a>
-        <a href="{{ route('dashboard.insurance') }}" class="{{ request()->routeIs('dashboard.insurance') ? 'active-link' : '' }}">
-            <i class="bi bi-people-fill me-2"></i> بیمه ورزشی
-        </a>
+
         <a href="{{ route('dashboard.payments') }}" class="{{ request()->routeIs('dashboard.payments') ? 'active-link' : '' }}">
             <i class="bi bi-credit-card-2-front-fill me-2"></i> پرداخت‌ها
         </a>
@@ -268,13 +259,13 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/persian-date@1.0.6/dist/persian-date.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/persian-date@1.0.6/dist/persian-date.min.js"></script>
 
 {{-- نقشه و تاریخ --}}
 <script>

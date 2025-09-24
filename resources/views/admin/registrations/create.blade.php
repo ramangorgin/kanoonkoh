@@ -7,7 +7,7 @@
 
             @guest
                 <div class="alert alert-warning">
-                    اگر عضو باشگاه هستید ابتدا <a href="{{ route('login') }}">وارد شوید</a> و سپس فرم را تکمیل کنید.
+                    اگر عضو باشگاه هستید ابتدا <a href="{{ route('auth.phone') }}">وارد شوید</a> و سپس فرم را تکمیل کنید.
                 </div>
             @endguest
 
