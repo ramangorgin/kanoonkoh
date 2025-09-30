@@ -90,36 +90,6 @@
     </div>
 </section>
 
-{{-- بخش چهارم: آخرین گزارش‌ها --}}
-<section class="py-5 bg-white">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="mb-0">آخرین گزارش‌ها</h3>
-            <a href="{{ route('reports.archive') }}" class="btn btn-outline-primary btn-sm">مشاهده همه</a>
-        </div>
-
-        <div class="row row-cols-1 row-cols-md-2 g-4">
-            @foreach($latestReports as $report)
-                <div class="col">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">{{ $report->program->title ?? 'گزارش بدون عنوان' }}</h5>
-                            <p class="card-text text-muted">
-                                تاریخ برنامه: {{ optional($report->program)->date ? jdate($report->program->date)->format('Y/m/d') : '-' }}
-                            </p>
-                            <p class="card-text flex-grow-1">
-                                {{ Str::limit(strip_tags($report->content), 120, '...') }}
-                            </p>
-                            <a href="{{ route('reports.show', $report->id) }}" class="btn btn-sm btn-outline-primary mt-2">
-                                مشاهده گزارش کامل
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
-        </div>
-    </div>
-</section>
 
 @push('scripts')
 <script>
