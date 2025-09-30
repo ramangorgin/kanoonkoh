@@ -14,6 +14,11 @@ class User extends Authenticatable
         'phone', 'otp_code', 'otp_expires_at', 'role'
     ];
 
+    public function Admin()
+    {
+        return $this->role === 'admin';
+    }
+
     public function isRegistrationComplete()
     {
         return $this->profile 
@@ -21,6 +26,10 @@ class User extends Authenticatable
             && $this->educationalHistories()->exists();
     }
 
+    public function getFullNameAttribute()
+    {
+        return optional($this->profile)->first_name . ' ' . optional($this->profile)->last_name;
+    }
 
     public function profile()
     {
@@ -42,54 +51,11 @@ class User extends Authenticatable
         return $this->hasMany(Enrollment::class);
     }
 
-    public function Admin()
-    {
-        return $this->role === 'admin';
-    }
-    public function programRoles()
-    {
-        return $this->hasMany(ProgramUserRole::class);
-    }
-
-    public function getFullNameAttribute()
-    {
-        return optional($this->profile)->first_name . ' ' . optional($this->profile)->last_name;
-    }
-    
-    protected static function booted()
-    {
-        static::created(function ($user) {
-            \App\Models\Report::whereNull('user_id')
-                ->where('writer_name', $user->full_name)
-                ->update(['user_id' => $user->id]);
-        });
-    }
-
-    public function programParticipations()
-    {
-        return $this->hasMany(UserProgramParticipation::class);
-    }
-
     public function payments()
     {
         return $this->hasMany(Payment::class);
     }
-
-    public function programs()
-    {
-        return $this->belongsToMany(Program::class)->withTimestamps();
-    }
-
-    public function courses()
-    {
-        return $this->belongsToMany(Course::class)->withTimestamps();
-    }
-
-    public function reports()
-    {
-        return $this->hasMany(Report::class);
-    }
-
+    
     public function programRegistrations()
     {
         return $this->hasMany(ProgramRegistration::class);
@@ -99,26 +65,17 @@ class User extends Authenticatable
     {
         return $this->hasMany(CourseRegistration::class);
     }
-   
-    public function isProfileComplete()
+
+    public function programs()
     {
-        return $this->first_name && $this->last_name && $this->avatar &&
-            $this->membership_level && $this->membership_date && $this->score;
-    }
-    
-    public function roles()
-    {
-        return $this->belongsToMany(Role::class);
+        return $this->belongsToMany(Program::class, 'program_registrations')
+                    ->withPivot('approved', 'guest_name', 'guest_phone');
     }
 
-    public function hasRole($role)
+    public function courses()
     {
-        return $this->roles->pluck('name')->contains($role);
-    }
-
-    public function courseCertificates()
-    {
-        return $this->hasMany(UserCourseCertificate::class);
+        return $this->belongsToMany(Course::class, 'course_registrations')
+                    ->withPivot('approved', 'guest_name', 'guest_phone');
     }
 
 }

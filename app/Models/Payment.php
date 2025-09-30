@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Program;
 use App\Models\Course;
@@ -9,22 +10,22 @@ use App\Models\User;
 
 class Payment extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'user_id',
         'type',
-        'related_id' ,
+        'related_id',
         'year',
+        'reference_code',
         'amount',
         'payment_date',
-        'transaction_code',
-        'receipt_file',
-        'amount', 
-        'approved'
+        'approved',
     ];
 
     protected $casts = [
+        'payment_date' => 'date',
         'approved' => 'boolean',
-        'payment_date' => 'date'
     ];
 
     public function user()
@@ -32,14 +33,18 @@ class Payment extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function relatedProgram()
+    public function registration()
+    {
+        return $this->hasOne(ProgramRegistration::class);
+    }
+
+    public function program()
     {
         return $this->belongsTo(Program::class, 'related_id');
     }
 
-    public function relatedCourse()
+    public function course()
     {
         return $this->belongsTo(Course::class, 'related_id');
     }
-
 }

@@ -82,4 +82,9 @@ class Course extends Model
         return $this->hasMany(CourseSurvey::class);
     }
 
+    public function files()
+    {
+        return $this->hasMany(CourseFile::class);
+    }
+
 }

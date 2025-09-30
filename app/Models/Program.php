@@ -2,48 +2,81 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Program extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'title', 'photos', 'description', 'start_date', 'end_date',
+        'type',
+        'title',
+        'description',
+        'poster_path',
+        'base_height',
+        'peak_height',
+        'area',
+        'peak_lat',
+        'peak_lon',
+        'start_date',
+        'end_date',
+        'registration_deadline',
+        'is_registration_open',
         'has_transport',
-        'departure_place_tehran', 'departure_dateTime_tehran', 'departure_lat_tehran', 'departure_lon_tehran',
-        'departure_place_karaj', 'departure_dateTime_karaj', 'departure_lat_karaj', 'departure_lon_karaj',
-        'required_equipment', 'required_meals',
-        'is_free', 'member_cost', 'guest_cost',
-        'card_number', 'sheba_number', 'card_holder', 'bank_name',
-        'report_photos',
-        'is_registration_open', 'registration_deadline',
+        'departure_dateTime_tehran',
+        'departure_place_tehran',
+        'departure_lat_tehran',
+        'departure_lon_tehran',
+        'departure_dateTime_karaj',
+        'departure_place_karaj',
+        'departure_lat_karaj',
+        'departure_lon_karaj',
+        'required_equipment',
+        'required_meals',
+        'is_free',
+        'member_cost',
+        'guest_cost',
+        'card_number',
+        'sheba_number',
+        'card_holder',
+        'bank_name',
+        'difficulty',
+        'status',
     ];
 
     protected $casts = [
-        'photos' => 'array',
+        'is_registration_open' => 'boolean',
         'has_transport' => 'boolean',
         'is_free' => 'boolean',
-        'is_registration_open' => 'boolean',
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'registration_deadline' => 'datetime',
     ];
 
-    public function users()
+    public function registrations()
     {
-        return $this->belongsToMany(User::class)->withTimestamps();
+        return $this->hasMany(ProgramRegistration::class);
     }
-    public function roles()
+
+    public function files()
+    {
+        return $this->hasMany(ProgramFile::class);
+    }
+
+    public function userRoles()
     {
         return $this->hasMany(ProgramUserRole::class);
     }
 
-    public function registrations()
+    public function details()
     {
-        return $this->hasMany(Registration::class, 'related_id')
-                    ->where('type', 'program');
+        return $this->hasOne(ProgramDetail::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'related_id')->where('type', 'program');
     }
     
-    public function surveys()
-    {
-        return $this->hasMany(ProgramSurvey::class);
-    }
-
 }
-

@@ -10,29 +10,48 @@ return new class extends Migration
     {
         Schema::create('courses', function (Blueprint $table) {
             $table->id();
+
             $table->unsignedInteger('federation_course_id');
+            $table->foreign('federation_course_id')
+                ->references('id')->on('federation_courses')
+                ->onDelete('cascade');
+
             $table->unsignedBigInteger('teacher_id')->nullable();
+            $table->foreign('teacher_id')
+                ->references('id')->on('teachers')
+                ->onDelete('set null');
+
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->time('start_time')->nullable();
             $table->time('end_time')->nullable();
+            $table->integer('duration')->nullable();
+
             $table->string('place')->nullable();
+            $table->string('place_address')->nullable();
             $table->decimal('place_lat', 10, 7)->nullable();
             $table->decimal('place_lon', 10, 7)->nullable();
+            
             $table->integer('capacity')->nullable();
+
             $table->boolean('is_free')->default(false);
             $table->integer('member_cost')->nullable();
             $table->integer('guest_cost')->nullable();
+
             $table->string('card_number')->nullable();
             $table->string('sheba_number')->nullable();
             $table->string('card_holder')->nullable();
             $table->string('bank_name')->nullable();
+
             $table->boolean('is_registration_open')->default(true);
             $table->date('registration_deadline')->nullable();
+
+            $table->longText('report')->nullable();
+
+            $table->enum('status', ['draft','published','completed','canceled'])->default('draft');
+            
             $table->timestamps();
 
-            $table->foreign('federation_course_id')->references('id')->on('federation_courses')->onDelete('cascade');
-            $table->foreign('teacher_id')->references('id')->on('teachers')->onDelete('set null');
         });
     }
 
