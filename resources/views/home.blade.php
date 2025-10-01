@@ -22,7 +22,7 @@
         <h2 class="fw-bold mb-2">باشگاه کوهنوردی دوستداران قله‌ها و طبیعت</h2>
         <h4 class="mb-4">(کانون کوه)</h4>
         <a href="{{ route('conditions') }}" class="btn btn-primary px-4 mt-2 ms-2">شرایط عضویت</a>
-        <a href="{{ url('/register') }}" class="btn btn-outline-light mt-2 px-4">ثبت‌نام در باشگاه</a>
+        <a href="{{ route('auth.phone') }}" class="btn btn-outline-light mt-2 px-4">ثبت‌نام در باشگاه</a>
     </div>
 </div>
 

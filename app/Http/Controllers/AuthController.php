@@ -54,7 +54,7 @@ class AuthController extends Controller
         $user->save();
 
         // Sending SMS
-        $templateId = 218734; // sms.ir لیست قالب‌های
+        $templateId = 218734;
         $parameters = [
             [
                 "name" => "CODE",
