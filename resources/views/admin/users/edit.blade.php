@@ -75,15 +75,15 @@
             <div class="col-md-6 mb-3">
                 <label>عکس پرسنلی</label>
                 
-                @if(optional($user->profile)->personal_photo)
+                @if(optional($user->profile)->photo)
                     <div class="mb-2">
-                        <img src="{{ asset('storage/' . $user->profile->personal_photo) }}"
+                        <img src="{{ asset('storage/' . $user->profile->photo) }}"
                             alt="عکس پرسنلی"
                             style="max-width: 120px; border-radius: 6px; border: 1px solid #ccc;">
                     </div>
                 @endif
                 
-                <input type="file" name="personal_photo" class="form-control">
+                <input type="file" name="photo" class="form-control">
                 <small class="form-text text-muted">
                     عکس باید واضح و از چهره روبرو باشد. فرمت مجاز: JPG یا PNG. حداکثر حجم: ۲ مگابایت.
                 </small>

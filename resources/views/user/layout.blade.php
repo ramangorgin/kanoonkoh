@@ -183,17 +183,11 @@
             </a>
 
             <!-- دکمه‌ها (همیشه سمت چپ) -->
-            <div class="d-flex align-items-center gap-3 order-2 ms-auto">
+            <div class="d-flex align-items-center gap-3 order-2">
                 <!-- فقط در موبایل: دکمه تاگل سایدبار -->
-                <button class="btn btn-primary d-inline-block d-lg-none" id="sidebarToggle">
+                <button class="btn btn-secondary d-inline-block d-lg-none" id="sidebarToggle">
                     <i class="bi bi-list fs-4"></i>
                 </button>
-
-                <!-- صفحه اصلی سایت -->
-                <a href="{{ url('/') }}" class="btn btn-outline-primary d-none d-lg-inline-flex px-3">
-                    <i class="bi bi-house-door-fill me-1"></i> صفحه اصلی
-                </a>
-
             </div>
 
         </div>
@@ -210,17 +204,18 @@
             <i class="bi bi-person-lines-fill me-2"></i> ویرایش مشخصات
         </a>
 
+        <a href="{{ route('dashboard.medicalRecord.show') }}" class="{{ request()->routeIs('dashboard.medicalRecord.show') ? 'active-link' : '' }}">
+            <i class="bi bi-clipboard2-pulse-fill me-2"></i>  پرونده پزشکی  
+        </a>
+
+        <a href="{{ route('dashboard.educationalHistory.index') }}" class="{{ request()->routeIs('dashboard.educationalHistory.index') ? 'active-link' : '' }}">
+            <i class="bi bi-book-fill me-2"></i>  سوابق آموزشی
+        </a>
+
         <a href="{{ route('dashboard.payments') }}" class="{{ request()->routeIs('dashboard.payments') ? 'active-link' : '' }}">
             <i class="bi bi-credit-card-2-front-fill me-2"></i> پرداخت‌ها
         </a>
-        <a href="{{ route('dashboard.programs') }}" class="{{ request()->routeIs('dashboard.programs') ? 'active-link' : '' }}">
-            <i class="bi bi-calendar-event-fill me-2"></i> برنامه‌ها
-        </a>
-        <a href="{{ route('dashboard.courses') }}" class="{{ request()->routeIs('dashboard.courses') ? 'active-link' : '' }}">
-            <i class="bi bi-book-fill me-2"></i> دوره‌ها
-        </a>
-        <a href="{{ route('dashboard.reports.index') }}" class="{{ request()->routeIs('dashboard.reports.*') ? 'active-link' : '' }}">
-            <i class="bi bi-pencil-square me-2"></i> گزارش‌ها
+
         </a>
         <a href="{{ route('dashboard.settings') }}" class="{{ request()->routeIs('dashboard.settings') ? 'active-link' : '' }}">
             <i class="bi bi-gear-fill me-2"></i> تنظیمات

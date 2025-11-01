@@ -34,57 +34,26 @@ class Course extends Model
         'is_special',
     ];
 
+    protected $dates = ['start_date', 'end_date'];
+
     public function teacher()
     {
         return $this->belongsTo(Teacher::class);
     }
 
-    public function prerequisites()
-    {
-        return $this->belongsToMany(
-            Course::class,
-            'course_prerequisites',
-            'course_id',
-            'prerequisite_course_id'
-        );
-    }
-
-    public function requiredFor()
-    {
-        return $this->belongsToMany(
-            Course::class,
-            'course_prerequisites',
-            'prerequisite_course_id',
-            'course_id'
-        );
-    }
-
-    public function enrollments()
-    {
-        return $this->hasMany(Enrollment::class);
-    }
-
-    public function users()
-    {
-        return $this->belongsToMany(User::class, 'enrollments')
-                    ->withPivot('completion_date', 'certificate_file')
-                    ->withTimestamps();
-    }
-
     public function registrations()
     {
-        return $this->hasMany(Registration::class, 'related_id')
-                    ->where('type', 'course');
-    }
-    
-    public function surveys()
-    {
-        return $this->hasMany(CourseSurvey::class);
+        return $this->hasMany(CourseRegistration::class);
     }
 
     public function files()
     {
         return $this->hasMany(CourseFile::class);
+    }
+
+    public function prerequisites()
+    {
+        return $this->hasMany(CoursePrerequisite::class);
     }
 
 }

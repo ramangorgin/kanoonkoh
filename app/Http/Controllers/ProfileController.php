@@ -16,10 +16,12 @@ class ProfileController extends Controller
         $user = Auth::user();
         $profile = $user->profile;
 
-        return view('user.myProfile', [
-            'profile' => $profile,
-            'hasProfile' => $profile !== null,
-        ]);
+
+        if (!$profile) {
+            return redirect()->back()->withErrors(['msg' => 'پروفایل یافت نشد.']);
+        }
+
+        return view('user.myProfile', compact('user', 'profile'));
     }
 
     public function store(Request $request)
@@ -34,7 +36,7 @@ class ProfileController extends Controller
             'gender' => 'nullable|string',
             'birth_date' => 'required|string',
             'national_id' => 'nullable|string',
-            'personal_photo' => 'nullable|image|max:2048',
+            'photo' => 'nullable|image|max:2048',
             'phone' => 'nullable|string',
             'province' => 'nullable|string',
             'city' => 'nullable|string',
@@ -61,15 +63,27 @@ class ProfileController extends Controller
 
         $birthDateRaw = $validated['birth_date'] ?? null;
 
-        if ($birthDateRaw && strlen($birthDateRaw) >= 8) {
-            $birthDateEnglish = $this->convertNumbersToEnglish($birthDateRaw);
-            $validated['birth_date'] = Jalalian::fromFormat('Y/m/d', $birthDateEnglish)->toCarbon();
+        if ($birthDateRaw && strlen(trim($birthDateRaw)) >= 8) {
+            try {
+                $birthDateEnglish = $this->convertNumbersToEnglish($birthDateRaw);
+
+                $validated['birth_date'] = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $birthDateEnglish)
+                    ->toCarbon()
+                    ->format('Y-m-d'); 
+            } catch (\Exception $e) {
+                return redirect()->back()->withErrors(['birth_date' => 'تاریخ تولد معتبر نیست.'])->withInput();
+            }
         } else {
-            return redirect()->back()->withErrors(['birth_date' => 'تاریخ تولد وارد نشده یا نامعتبر است.'])->withInput();
+            $validated['birth_date'] = null;
         }
 
-        if ($request->hasFile('personal_photo')) {
-            $validated['personal_photo'] = $request->file('personal_photo')->store('profiles', 'public');
+
+        if ($request->hasFile('photo')) {
+            $validated['photo'] = $request->file('photo')->store('photos', 'public');
+        }
+
+        if ($request->hasFile('national_card')) {
+            $validated['national_card'] = $request->file('national_card')->store('national_cards', 'public');
         }
 
         $profile = $user->profile;
@@ -80,6 +94,63 @@ class ProfileController extends Controller
         }
 
         return redirect()->back()->with('success', 'مشخصات با موفقیت ذخیره شد.');
+    }
+
+
+    public function update(Request $request, $id)
+    {
+        $user = Auth::user();
+
+        // بررسی مجوز و وجود پروفایل
+        if ($user->id != $id) {
+            abort(403, 'شما مجاز به ویرایش این پروفایل نیستید.');
+        }
+
+        $profile = $user->profile;
+        if (!$profile) {
+            return redirect()->back()->withErrors(['msg' => 'پروفایلی برای این کاربر یافت نشد.']);
+        }
+
+        // قوانین اعتبارسنجی
+        $rules = [
+            'first_name' => 'required|string',
+            'last_name' => 'required|string',
+            'father_name' => 'nullable|string',
+            'id_number' => 'nullable|string',
+            'id_place' => 'nullable|string',
+            'birth_date' => 'nullable|string',
+            'national_id' => 'nullable|string',
+            'photo' => 'nullable|image|max:2048',
+            'national_card' => 'nullable|file|max:4096',
+            'marital_status' => 'nullable|string',
+            'emergency_phone' => 'nullable|string',
+            'referrer' => 'nullable|string',
+            'education' => 'nullable|string',
+            'job' => 'nullable|string',
+            'home_address' => 'nullable|string',
+            'work_address' => 'nullable|string',
+        ];
+
+        $validated = $request->validate($rules);
+
+        // 🔹 فقط اعداد فارسی تاریخ رو به انگلیسی تبدیل کن
+        if (!empty($validated['birth_date'])) {
+            $validated['birth_date'] = $this->convertNumbersToEnglish($validated['birth_date']);
+        }
+
+        // 🔹 ذخیره‌ی فایل‌ها (در صورت وجود)
+        if ($request->hasFile('photo')) {
+            $validated['photo'] = $request->file('photo')->store('photos', 'public');
+        }
+
+        if ($request->hasFile('national_card')) {
+            $validated['national_card'] = $request->file('national_card')->store('national_cards', 'public');
+        }
+
+        // 🔹 به‌روزرسانی اطلاعات
+        $profile->update($validated);
+
+        return redirect()->back()->with('success', 'مشخصات با موفقیت به‌روزرسانی شد.');
     }
 
     private function convertNumbersToEnglish($string)

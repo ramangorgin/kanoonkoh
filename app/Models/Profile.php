@@ -37,40 +37,58 @@ class Profile extends Model
         'work_address',
     ];
 
-    /**
-     * رابطه با کاربر
-     */
+    protected $casts = [
+        'birth_date' => 'date',
+    ];
+
+    public function setBirthDateAttribute($value)
+    {
+        try {
+            // اگر مقدار خالی یا نال بود، هیچی تنظیم نکن
+            if (empty($value)) {
+                $this->attributes['birth_date'] = null;
+                return;
+            }
+
+            // فقط اعداد فارسی → انگلیسی
+            $value = str_replace(['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'], ['0','1','2','3','4','5','6','7','8','9'], $value);
+
+            // تبدیل از شمسی به میلادی
+            [$year, $month, $day] = explode('/', $value);
+            $this->attributes['birth_date'] = (new \Morilog\Jalali\Jalalian($year, $month, $day))
+                ->toCarbon()
+                ->toDateString(); // ذخیره به فرمت YYYY-MM-DD
+        } catch (\Exception $e) {
+            $this->attributes['birth_date'] = null;
+        }
+    }
+
+
+    public function setPhotoAttribute($value)
+    {
+        if (!empty($value) && $value !== 'profiles/') {
+            $this->attributes['photo'] = $value;
+        }
+    }
+
+    public function setNationalCardAttribute($value)
+    {
+        if (!empty($value) && $value !== 'profiles/') {
+            $this->attributes['national_card'] = $value;
+        }
+    }
+
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * تولید شماره عضویت یکتا از 1000 به بالا
-     */
+
     public static function generateMembershipId()
     {
         $lastId = self::max('membership_id');
         return $lastId ? $lastId + 1 : 1000;
     }
 
-    /**
-     * تبدیل تاریخ تولد (شمسی → میلادی) قبل از ذخیره
-     */
-    public function setBirthDateAttribute($value)
-    {
-        try {
-            // value مثل 1400/05/10
-            [$year, $month, $day] = explode('/', $value);
-            $this->attributes['birth_date'] = (new Jalalian($year, $month, $day))
-                ->toCarbon()
-                ->toDateString(); // 2021-07-31
-        } catch (\Exception $e) {
-            $this->attributes['birth_date'] = null;
-        }
-    }
-
-    /**
-     * تاریخ‌های عضویت → بعداً توسط ادمین ست می‌شن
-     */
 }

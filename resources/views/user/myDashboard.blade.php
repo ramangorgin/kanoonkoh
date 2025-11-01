@@ -22,7 +22,7 @@
 
     <div class="card mb-4">
         <div class="card-body d-flex align-items-center">
-            <img src="{{ $user->profile && $user->profile->personal_photo ? asset('storage/' . $user->profile->personal_photo) : asset('images/default-avatar.png') }}" alt="عکس کاربر" class="img-thumbnail me-3" style="max-height: 120px;">
+            <img src="{{ $user->profile && $user->profile->photo ? asset('storage/' . $user->profile->photo) : asset('images/default-avatar.png') }}" alt="عکس کاربر" class="img-thumbnail me-3" style="max-height: 120px;">
             <div>
                 <h5 style="font-family: Vazirmatn;" class="mb-3">
                     {{ $user->profile->first_name ?? '' }} {{ $user->profile->last_name ?? '' }}
@@ -67,35 +67,7 @@
             </div>
         </div>
 
-        {{-- برنامه‌های من --}}
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">برنامه‌های من</div>
-                <div class="card-body">
-                    <a href="{{ route('dashboard.programs') }}" class="btn btn-sm btn-outline-primary">مشاهده برنامه‌ها</a>
-                </div>
-            </div>
-        </div>
 
-        {{-- دوره‌های من --}}
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">دوره‌های من</div>
-                <div class="card-body">
-                    <a href="{{ route('dashboard.courses') }}" class="btn btn-sm btn-outline-primary">مشاهده دوره‌ها</a>
-                </div>
-            </div>
-        </div>
-
-        {{-- گزارش‌های من --}}
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">گزارش‌های من</div>
-                <div class="card-body">
-                    <a href="{{ route('dashboard.reports.index') }}" class="btn btn-sm btn-outline-primary">مشاهده گزارش‌ها</a>
-                </div>
-            </div>
-        </div>
 
 
         {{-- تنظیمات --}}

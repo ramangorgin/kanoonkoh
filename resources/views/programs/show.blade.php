@@ -87,8 +87,8 @@
                     $fullName = $user && $profile
                         ? $profile->first_name . ' ' . $profile->last_name
                         : $role->user_name;
-                    $photo = $profile && $profile->personal_photo
-                        ? asset('storage/' . $profile->personal_photo)
+                    $photo = $profile && $profile->photo
+                        ? asset('storage/' . $profile->photo)
                         : 'https://ui-avatars.com/api/?name=' . urlencode($fullName) . '&background=0D8ABC&color=fff';
                 @endphp
 

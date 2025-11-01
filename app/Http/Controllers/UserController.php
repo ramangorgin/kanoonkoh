@@ -48,7 +48,7 @@ class UserController extends Controller
             'gender' => 'nullable|in:male,female',
             'birth_date' => 'nullable|date',
             'national_id' => 'nullable|string|max:20',
-            'personal_photo' => 'nullable|image|max:2048',
+            'photo' => 'nullable|image|max:2048',
         ]);
 
         $user = User::create([
@@ -60,8 +60,8 @@ class UserController extends Controller
         $profileData = $request->except(['email', 'password', 'role']);
         $profileData['user_id'] = $user->id;
 
-        if ($request->hasFile('personal_photo')) {
-            $profileData['personal_photo'] = $request->file('personal_photo')->store('photos', 'public');
+        if ($request->hasFile('photo')) {
+            $profileData['photo'] = $request->file('photo')->store('photos', 'public');
         }
 
         Profile::create($profileData);
@@ -110,7 +110,7 @@ class UserController extends Controller
             'emergency_contact_relation'  => ['nullable','string','max:100'],
 
             // فایل
-            'personal_photo' => ['nullable','image','mimes:jpg,jpeg,png','max:2048'],
+            'photo' => ['nullable','image','mimes:jpg,jpeg,png','max:2048'],
         ]);
 
         DB::beginTransaction();
@@ -136,13 +136,13 @@ class UserController extends Controller
             $profile->fill($profileData);
 
             // اگر عکس جدید آپلود شد
-            if ($request->hasFile('personal_photo')) {
+            if ($request->hasFile('photo')) {
                 // حذف فایل قبلی (اگر هست)
-                if (!empty($profile->personal_photo)) {
-                    Storage::disk('public')->delete($profile->personal_photo);
+                if (!empty($profile->photo)) {
+                    Storage::disk('public')->delete($profile->photo);
                 }
                 // ذخیره فایل جدید
-                $profile->personal_photo = $request->file('personal_photo')->store('photos', 'public');
+                $profile->photo = $request->file('photo')->store('photos', 'public');
             }
 
             $profile->save();
@@ -161,8 +161,8 @@ class UserController extends Controller
     public function destroy($id)
     {
         $user = User::findOrFail($id);
-        if ($user->profile && $user->profile->personal_photo) {
-            Storage::disk('public')->delete($user->profile->personal_photo);
+        if ($user->profile && $user->profile->photo) {
+            Storage::disk('public')->delete($user->profile->photo);
         }
         $user->delete();
         return redirect()->route('admin.users.index')->with('success', 'کاربر حذف شد.');

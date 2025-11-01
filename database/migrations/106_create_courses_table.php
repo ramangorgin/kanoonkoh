@@ -21,6 +21,7 @@ return new class extends Migration
                 ->references('id')->on('teachers')
                 ->onDelete('set null');
 
+            $table->string('title')->nullable();
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->time('start_time')->nullable();

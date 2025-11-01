@@ -69,7 +69,7 @@
             </div>
             <div class="col-md-6 mb-3">
                 <label>عکس پرسنلی</label>
-                <input type="file" name="personal_photo" class="form-control">
+                <input type="file" name="photo" class="form-control">
                 <small class="form-text text-muted">عکس باید واضح و از چهره روبرو باشد. فرمت مجاز: JPG یا PNG. حداکثر حجم: ۲ مگابایت.</small>
             </div>
         </div>

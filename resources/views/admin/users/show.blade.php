@@ -26,9 +26,9 @@
     <div class="card mb-4">
         <div class="card-header">مشخصات فردی</div>
             <div class="col-md-9 ps-3 py-3">
-                @if($user->profile?->personal_photo)
-                    <a href="{{ asset('storage/' . $user->profile->personal_photo) }}" target="_blank">
-                        <img src="{{ asset('storage/' . $user->profile->personal_photo) }}" class="img-thumbnail" style="width: 100px;">                    </a>
+                @if($user->profile?->photo)
+                    <a href="{{ asset('storage/' . $user->profile->photo) }}" target="_blank">
+                        <img src="{{ asset('storage/' . $user->profile->photo) }}" class="img-thumbnail" style="width: 100px;">                    </a>
                 @else
                     <p class="text-muted">تصویری ثبت نشده است</p>
                 @endif

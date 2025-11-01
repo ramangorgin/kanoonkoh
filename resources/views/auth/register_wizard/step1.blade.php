@@ -1,6 +1,33 @@
 @extends('layout')
 
 @section('content')
+
+@php
+use Morilog\Jalali\Jalalian;
+use Carbon\Carbon;
+
+function toPersianDate($date)
+{
+    if (!$date) return '';
+    $enToFa = function ($num) {
+        $persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+        $english = ['0','1','2','3','4','5','6','7','8','9'];
+        return str_replace($english, $persian, $num);
+    };
+
+    try {
+        if ($date instanceof Carbon) {
+            $jalali = \Morilog\Jalali\Jalalian::forge($date)->format('Y/m/d');
+        } else {
+            $jalali = \Morilog\Jalali\Jalalian::forge(strtotime($date))->format('Y/m/d');
+        }
+        return $enToFa($jalali);
+    } catch (\Exception $e) {
+        return '';
+    }
+}
+@endphp
+
 <div class="container">
 
     <div class="mb-4">

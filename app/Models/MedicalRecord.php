@@ -32,6 +32,12 @@ class MedicalRecord extends Model
         'commitment_signed'
     ];
 
+    protected $casts = [
+        'insurance_issue_date' => 'date',
+        'insurance_expiry_date' => 'date',
+    ];
+
+
     public function user()
     {
         return $this->belongsTo(User::class);

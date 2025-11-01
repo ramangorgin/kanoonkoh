@@ -9,6 +9,8 @@ class EducationalHistory extends Model
 {
     use HasFactory;
 
+    protected $table = 'educational_histories';
+
     protected $fillable = [
         'user_id',
         'federation_course_id',
@@ -24,5 +26,12 @@ class EducationalHistory extends Model
     public function federationCourse()
     {
         return $this->belongsTo(FederationCourse::class, 'federation_course_id');
+    }
+
+    public function getIssueDateJalaliAttribute()
+    {
+        return $this->issue_date
+            ? Jalalian::fromCarbon(Carbon::parse($this->issue_date))->format('Y/m/d')
+            : null;
     }
 }

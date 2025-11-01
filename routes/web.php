@@ -6,12 +6,15 @@ use App\Http\Controllers\HomeController;
 
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\UserCoursesController;
+use App\Http\Controllers\EducationalHistoryController;
+
+
 use App\Http\Controllers\RegistrationController;
-use App\Http\Controllers\ReportController;
 
 use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\InsuranceController;
+use App\Http\Controllers\MedicalRecordController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SettingsController;
 
@@ -20,6 +23,7 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\UserController;
+
 
 use App\Http\Controllers\AuthController;
 
@@ -69,32 +73,25 @@ Route::prefix('dashboard')->name('dashboard.')->middleware('auth')->group(functi
 
     Route::get('/', [UserDashboardController::class, 'index'])->name('index');
 
-    Route::get('/courses', [UserDashboardController::class, 'courses'])->name('courses');
 
-    Route::get('/programs', [UserDashboardController::class, 'programs'])->name('programs');
+    Route::get('/educational-histories', [EducationalHistoryController::class, 'index'])->name('educationalHistory.index');
+    Route::post('/educational-histories', [EducationalHistoryController::class, 'store'])->name('educationalHistory.store');
+    Route::put('/educational-histories/{id}', [EducationalHistoryController::class, 'update'])->name('educationalHistory.update');
+    Route::delete('/educational-histories/{id}', [EducationalHistoryController::class, 'destroy'])->name('educationalHistory.destroy');
+
 
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
     Route::post('/profile', [ProfileController::class, 'store'])->name('profile.store');
+    Route::put('/profile/{user}', [ProfileController::class, 'update'])->name('profile.update');
 
-    Route::get('/insurance', [InsuranceController::class, 'show'])->name('medicalRecord');
-    Route::post('/insurance', [InsuranceController::class, 'store'])->name('medicalRecord.store');
-
-    Route::get('/insurance', [InsuranceController::class, 'show'])->name('educationalHistory');
-    Route::post('/insurance', [InsuranceController::class, 'store'])->name('educationalHistory.store');
+    Route::get('/medical-record', [MedicalRecordController::class, 'show'])->name('medicalRecord.show');
+    Route::put('/medical-record', [MedicalRecordController::class, 'update'])->name('medicalRecord.update');
 
     Route::get('/payments', [PaymentController::class, 'UserIndex'])->name('payments');
     Route::post('/payment', [PaymentController::class, 'store'])->name('payment.store');
 
-
     Route::get('/settings', [UserDashboardController::class, 'settings'])->name('settings');
     Route::post('/settings', [SettingsController::class, 'updatePassword'])->name('settings.updatePassword');
-
-    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-    Route::get('/reports/create', [ReportController::class, 'create'])->name('reports.create');
-    Route::get('/reports/edit', [ReportController::class, 'edit'])->name('reports.edit');
-    Route::get('/reports/update', [ReportController::class, 'update'])->name('reports.update');
-    Route::get('/reports/show', [ReportController::class, 'show'])->name('reports.show');
-    Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
 
 });
 

@@ -29,7 +29,6 @@ class AuthController extends Controller
     // ==========================
     public function requestOtp(Request $request)
     {
-        // اگر phone در فرم نبود، از سشن بگیر
         if ($request->has('phone')) {
             $request->validate([
                 'phone' => 'required|digits:11'
@@ -42,7 +41,6 @@ class AuthController extends Controller
             }
         }
 
-
         // Generating 4-digts Code
         $otp = rand(1000, 9999);
 
@@ -54,7 +52,7 @@ class AuthController extends Controller
         $user->save();
 
         // Sending SMS
-        $templateId = 218734;
+        $templateId = 123456;
         $parameters = [
             [
                 "name" => "CODE",
@@ -200,6 +198,30 @@ class AuthController extends Controller
             'home_address'   => $request->home_address,
             'work_address'   => $request->work_address,
         ]);
+
+        // 📅 تبدیل تاریخ تولد شمسی → میلادی
+        if ($request->filled('birth_date')) {
+            try {
+                // اعداد فارسی به انگلیسی
+                $birthDateEnglish = str_replace(
+                    ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'],
+                    ['0','1','2','3','4','5','6','7','8','9'],
+                    $request->birth_date
+                );
+
+                // تبدیل شمسی به میلادی
+                [$y, $m, $d] = explode('/', $birthDateEnglish);
+                $birthDateGregorian = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', "$y/$m/$d")
+                    ->toCarbon()
+                    ->toDateString(); // YYYY-MM-DD
+
+                $validated['birth_date'] = $birthDateGregorian;
+
+            } catch (\Exception $e) {
+                return back()->withErrors(['birth_date' => 'تاریخ تولد وارد شده معتبر نیست.'])->withInput();
+            }
+        }
+
 
         $user->profile()->save($profile);
 
