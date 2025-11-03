@@ -12,17 +12,17 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
 
-            // بیمه ورزشی
+            // Inusarance
             $table->date('insurance_issue_date')->nullable();
             $table->date('insurance_expiry_date')->nullable();
             $table->string('insurance_file')->nullable();
 
-            // مشخصات فیزیکی
+            // Pyhisical details
             $table->string('blood_type', 5)->nullable();
             $table->smallInteger('height')->nullable();
             $table->smallInteger('weight')->nullable();
 
-            // سؤالات پزشکی
+            // Medical questions
             $table->boolean('head_injury')->nullable();
             $table->text('head_injury_details')->nullable();
             $table->boolean('eye_ear_problems')->nullable();
@@ -50,10 +50,10 @@ return new class extends Migration
             $table->boolean('treatment')->nullable();
             $table->text('treatment_details')->nullable();
 
-            // توضیحات اضافی
+            // Extra Explonations
             $table->text('other_conditions')->nullable();
 
-            // تعهدنامه
+            // Terms
             $table->boolean('commitment_signed')->default(0);
 
             $table->timestamps();

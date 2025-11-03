@@ -11,8 +11,7 @@ return new class extends Migration
         Schema::create('educational_histories', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->unsignedInteger('federation_course_id'); // وصل به جدول فدراسیون
-            $table->date('completion_date')->nullable();
+            $table->unsignedInteger('federation_course_id');
             $table->string('certificate_file')->nullable();
             $table->timestamps();
 

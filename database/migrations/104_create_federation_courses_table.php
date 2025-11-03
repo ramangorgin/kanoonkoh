@@ -9,7 +9,7 @@ return new class extends Migration
     public function up()
     {
         Schema::create('federation_courses', function (Blueprint $table) {
-            $table->unsignedInteger('id')->primary(); // کد رسمی فدراسیون
+            $table->unsignedInteger('id')->primary();
             $table->string('title');
             $table->text('description')->nullable();
             $table->timestamps();
