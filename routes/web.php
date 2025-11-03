@@ -38,6 +38,8 @@ Route::post('/auth/phone', [AuthController::class, 'requestOtp'])->name('auth.re
 
 Route::get('/auth/verify', [AuthController::class, 'showVerifyForm'])->name('auth.verifyForm');
 Route::post('/auth/verify', [AuthController::class, 'verifyOtp'])->name('auth.verifyOtp');
+
+Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 // ==========================
 
 // Sign-Up Wizard

@@ -14,14 +14,12 @@ class UserDashboardController extends Controller
         $user = Auth::user()->load([
             'profile',
             'medicalRecord',
-            'enrollments.course', 
         ]);
 
         return view('user.myDashboard', [
             'user' => $user,
             'profile' => $user->profile,
             'medicalRecord' => $user->medicalRecord,
-            'educationalHistories' => $user->enrollments,
         ]);
     }
 

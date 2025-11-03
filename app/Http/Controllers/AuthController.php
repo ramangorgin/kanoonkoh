@@ -13,6 +13,7 @@ use App\Models\MedicalRecord;
 use App\Models\Enrollment;
 use App\Models\EducationalHistory;
 use App\Models\FederationCourse;
+use Illuminate\Support\Facades\Validator;
 
 
 class AuthController extends Controller
@@ -29,30 +30,33 @@ class AuthController extends Controller
     // ==========================
     public function requestOtp(Request $request)
     {
-        if ($request->has('phone')) {
-            $request->validate([
-                'phone' => 'required|digits:11'
-            ]);
-            $phone = $request->phone;
-        } else {
-            $phone = Session::get('auth_phone');
-            if (!$phone) {
-                return redirect()->route('auth.phone')->withErrors(['phone' => 'شماره تلفن یافت نشد']);
-            }
+        $rules = [
+            'phone' => 'required|digits:11',
+            'arcaptcha-token' => 'arcaptcha'
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            $errors = $validator->errors();
+            return back()->withErrors($errors)->withInput();
         }
 
-        // Generating 4-digts Code
+        $phone = $request->input('phone') ?? Session::get('auth_phone');
+
+        if (!$phone) {
+            return redirect()->route('auth.phone')
+                ->withErrors(['phone' => 'شماره تلفن یافت نشد']);
+        }
+
         $otp = rand(1000, 9999);
 
         $user = User::firstOrCreate(['phone' => $phone]);
-
-
         $user->otp_code = $otp;
-        $user->otp_expires_at = Carbon::now()->addMinutes(5);
+        $user->otp_expires_at = now()->addMinutes(5);
         $user->save();
 
-        // Sending SMS
-        $templateId = 123456;
+        $templateId = 218734;
         $parameters = [
             [
                 "name" => "CODE",
@@ -61,12 +65,11 @@ class AuthController extends Controller
         ];
 
         try {
-            $response = SmsIr::verifySend($phone, $templateId, $parameters);
+            SmsIr::verifySend($phone, $templateId, $parameters);
         } catch (\Exception $e) {
             return back()->withErrors(['sms' => 'خطا در ارسال پیامک: ' . $e->getMessage()]);
         }
 
-        // Saving the Phone Number for next steps
         Session::put('auth_phone', $phone);
 
         return redirect()->route('auth.verifyForm')->with('status', 'کد تایید ارسال شد');
@@ -432,4 +435,15 @@ class AuthController extends Controller
         return view('auth.register_wizard.complete');
     }
 
+    // ==========================
+    // Logout
+    public function logout(Request $request)
+    {
+        auth()->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/auth/phone')->with('status', 'با موفقیت خارج شدید.');
+    }
+    // ==========================
 }

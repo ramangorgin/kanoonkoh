@@ -181,4 +181,6 @@ return [
 
     'attributes' => [],
 
+    'arcaptcha' => 'Hey!!! :attribute is wrong!',
+
 ];
