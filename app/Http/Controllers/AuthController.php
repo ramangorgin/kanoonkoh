@@ -383,13 +383,12 @@ class AuthController extends Controller
         $request->validate([
             'courses' => ['required', 'array', 'min:1'],
             'courses.*.course' => ['required', 'integer', 'exists:federation_courses,id'],
-            'courses.*.date' => ['required', 'string'], // شمسی دریافت می‌کنیم
-            'courses.*.certificate' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+            'courses.*.date' => ['required', 'string'],
+            'courses.*.certificate' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
         ], [
             'courses.required' => 'حداقل یک دوره باید ثبت شود.',
             'courses.*.course.required' => 'انتخاب نام دوره الزامی است.',
             'courses.*.date.required' => 'تاریخ اخذ مدرک الزامی است.',
-            'courses.*.certificate.required' => 'فایل مدرک الزامی است.',
         ]);
 
         $phone = session('auth_phone');
@@ -399,9 +398,9 @@ class AuthController extends Controller
 
             $dateInput = str_replace('-', '/', $this->nd($courseData['date']));
             try {
-                $completionDate = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $dateInput)
-                                    ->toCarbon()
-                                    ->toDateString(); // YYYY-MM-DD
+                $issueDate = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $dateInput)
+                    ->toCarbon()
+                    ->toDateString();
             } catch (\Exception $e) {
                 return back()->withErrors([
                     "courses.$index.date" => "تاریخ وارد شده معتبر نیست"
@@ -410,17 +409,17 @@ class AuthController extends Controller
 
             $certificatePath = null;
             if (!empty($courseData['certificate'])) {
-                $certificatePath = $courseData['certificate']->store('certificates', 'public');
+                $certificatePath = $courseData['certificate']->store('educational_certificates', 'public');
             }
 
-            $history = new EducationalHistory([
+            $history = new \App\Models\EducationalHistory([
                 'federation_course_id' => (int) $courseData['course'],
-                'completion_date'      => $completionDate,
+                'issue_date'           => $issueDate, // ✅ اصلاح شد
                 'certificate_file'     => $certificatePath,
             ]);
+
             $user->educationalHistories()->save($history);
         }
-
 
         return redirect()->route('auth.register.complete')
                         ->with('status', 'سوابق آموزشی شما با موفقیت ثبت شد.');

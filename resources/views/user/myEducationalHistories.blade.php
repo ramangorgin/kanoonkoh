@@ -90,7 +90,7 @@
                                                         <label class="form-label">تاریخ صدور مدرک</label>
                                                         <input type="text" class="form-control persian-datepicker"
                                                                name="issue_date"
-                                                               value="{{ $history->issue_date ? \Morilog\Jalali\Jalalian::fromCarbon($history->issue_date)->format('Y/m/d') : '' }}">
+                                                               value="{{ $history->issue_date_jalali }}">
                                                     </div>
 
                                                     <div class="mb-3">
@@ -144,6 +144,12 @@
                     </div>
 
                     <div class="mb-3">
+                        <label class="form-label">تاریخ صدور مدرک</label>
+                        <input type="text" name="issue_date" class="form-control persian-datepicker">
+                    </div>
+
+
+                    <div class="mb-3">
                         <label class="form-label">فایل مدرک</label>
                         <input type="file" name="certificate_file" class="form-control" accept="image/*,application/pdf">
                     </div>
@@ -167,5 +173,14 @@
             calendar: { persian: { locale: 'fa' } }
         });
     });
+</script>
+<script>
+$(document).on('shown.bs.modal', '.modal', function() {
+    $(this).find('.persian-datepicker').persianDatepicker({
+        format: 'YYYY/MM/DD',
+        autoClose: true,
+        calendar: { persian: { locale: 'fa' } }
+    });
+});
 </script>
 @endsection

@@ -109,8 +109,9 @@ class EducationalHistoryController extends Controller
         $history->update([
             'federation_course_id' => $request->federation_course_id,
             'issue_date'           => $issueDate,
-            'certificate_file'     => $history->certificate_file,
+            'certificate_file'     => $filePath ?? $history->certificate_file,
         ]);
+
 
         return redirect()->back()->with('success', 'سابقه آموزشی با موفقیت به‌روزرسانی شد.');
     }

@@ -10,19 +10,27 @@ return new class extends Migration
     {
         Schema::create('educational_histories', function (Blueprint $table) {
             $table->id();
+
             $table->unsignedBigInteger('user_id');
             $table->unsignedInteger('federation_course_id');
+
+            $table->date('issue_date')->nullable();
+
             $table->string('certificate_file')->nullable();
+
             $table->timestamps();
 
             $table->foreign('user_id')
-                ->references('id')->on('users')
+                ->references('id')
+                ->on('users')
                 ->onDelete('cascade');
 
             $table->foreign('federation_course_id')
-                ->references('id')->on('federation_courses')
+                ->references('id')
+                ->on('federation_courses')
                 ->onDelete('cascade');
         });
+
 
     }
 

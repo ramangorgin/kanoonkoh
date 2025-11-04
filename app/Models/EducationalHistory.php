@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Morilog\Jalali\Jalalian;
+use Carbon\Carbon;
 
 class EducationalHistory extends Model
 {
@@ -14,7 +16,7 @@ class EducationalHistory extends Model
     protected $fillable = [
         'user_id',
         'federation_course_id',
-        'completion_date',
+        'issue_date', 
         'certificate_file',
     ];
 

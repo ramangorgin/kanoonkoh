@@ -80,8 +80,9 @@
                     <!-- فایل مدرک -->
                     <div class="col-md-3">
                         <label class="form-label">فایل مدرک</label>
-                        <input type="file" class="form-control" name="courses[0][certificate]" accept="image/*,application/pdf" required>
+                        <input type="file" class="form-control" name="courses[0][certificate]" accept="image/*,application/pdf">
                         <div class="form-text">فرمت: jpg, png, pdf — حداکثر ۲ مگابایت</div>
+                        <div class="form-text">آپلود مدرک اختیاریست اما اکیدا توصیه می‌شود بارگذاری نمایید.</div>
                     </div>
 
                     <!-- دکمه حذف -->

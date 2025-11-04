@@ -86,8 +86,10 @@ class InitialDataSeeder extends Seeder
             'user_id' => 1,
             'federation_course_id' => 1,
             'certificate_file' => null,
+            'issue_date' => now()->subYears(rand(0, 5))->subMonths(rand(0, 11))->subDays(rand(0, 28))->toDateString(),
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
     }
 }
