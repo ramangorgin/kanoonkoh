@@ -18,9 +18,11 @@
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
+            <!--
             <div class="mb-3">
                 @arcaptchaWidget
             </div>
+-->
             <button type="submit" class="btn btn-primary w-100">ارسال کد تایید</button>
 
         </form>
