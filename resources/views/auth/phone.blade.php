@@ -9,7 +9,6 @@
 
         <form method="POST" action="{{ route('auth.requestOtp') }}">
             @csrf
-                  <!--
             <div class="mb-3">
                 <label for="phone" class="form-label">شماره تلفن همراه</label>
                 <input type="string" id="phone" name="phone" placeholder="مثال: ۰۹۱۲۱۲۳۴۵۶۷"
@@ -23,7 +22,6 @@
             <div class="mb-3">
                 @arcaptchaWidget
             </div>
--->
             <button type="submit" class="btn btn-primary w-100">ارسال کد تایید</button>
 
         </form>
