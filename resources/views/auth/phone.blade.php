@@ -9,6 +9,7 @@
 
         <form method="POST" action="{{ route('auth.requestOtp') }}">
             @csrf
+                  <!--
             <div class="mb-3">
                 <label for="phone" class="form-label">شماره تلفن همراه</label>
                 <input type="string" id="phone" name="phone" placeholder="مثال: ۰۹۱۲۱۲۳۴۵۶۷"
@@ -18,7 +19,7 @@
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
-            <!--
+      
             <div class="mb-3">
                 @arcaptchaWidget
             </div>
