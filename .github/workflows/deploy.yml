@@ -21,16 +21,35 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             set -e
+
+            echo "🔹 1. Entering to the project directory"
             cd /var/www/kanoonkoh  
+
+            echo "🔹 2. Adding GitHub to known_hosts"
             mkdir -p ~/.ssh
             ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts
-            git pull origin main
+
+            echo "🔹 3. Pulling the latest version from GitHub"
+            sudo git pull origin main
+
+            echo "🔹 4. Setting file ownership for ubuntu"
+            sudo chown -R ubuntu:www-data /var/www/kanoonkoh
+            sudo chmod -R 775 storage bootstrap/cache
+
+            echo "🔹 5. Ensuring .env file exists and switching to production"
             if [ -f .env.production ]; then
               cp .env.production .env
             fi
-            composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
-            php artisan migrate --force
-            php artisan optimize
-            php artisan cache:clear
-            php artisan config:clear
-            php artisan view:clear
+            sudo sed -i 's/^APP_ENV=.*/APP_ENV=production/' .env
+
+            echo "🔹 6. Installing composer dependencies"
+            sudo composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
+            echo "🔹 7. Running migrate and cache clear"
+            sudo php artisan migrate --force
+            sudo php artisan optimize
+            sudo php artisan cache:clear
+            sudo php artisan config:clear
+            sudo php artisan view:clear
+
+            echo "Deployment was successful✅"
