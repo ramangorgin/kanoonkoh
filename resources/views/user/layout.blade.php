@@ -24,14 +24,19 @@
     <link href="https://cdn.jsdelivr.net/gh/rastikerdar/sahel-font@v3.4.0/dist/font-face.css" rel="stylesheet" type="text/css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
 
 
     @stack('styles')
     <style>
 
-        h5{
-            font-family: 'Sahel', sans-serif;
+        h1, h2 , h3 , h4, h5{
+            font-family: 'Vazirmatn', sans-serif;
+        }
+        p , a , button{
+            font-family: 'Vazirmatn', sans-serif;
         }
 
         body {
@@ -212,7 +217,7 @@
             <i class="bi bi-book-fill me-2"></i>  سوابق آموزشی
         </a>
 
-        <a href="{{ route('dashboard.payments') }}" class="{{ request()->routeIs('dashboard.payments') ? 'active-link' : '' }}">
+        <a href="{{ route('dashboard.payments.index') }}" class="{{ request()->routeIs('dashboard.payments.index') ? 'active-link' : '' }}">
             <i class="bi bi-credit-card-2-front-fill me-2"></i> پرداخت‌ها
         </a>
 
@@ -242,25 +247,20 @@
     });
 </script>
 
-<script src="{{ asset('js/jquery.min.js') }}"></script>
-<script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
-<script src="{{ asset('js/persian-date.min.js') }}"></script>
-<script src="{{ asset('js/persian-datepicker.min.js') }}"></script>
-<script src="{{ asset('js/select2.min.js') }}"></script>
-<script src="{{ asset('js/leaflet.js') }}"></script>
-<script src="{{ asset('js/ckeditor.js') }}"></script>
-
 
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/persian-date@1.0.6/dist/persian-date.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>AOS.init();</script>
 
 {{-- نقشه و تاریخ --}}
 <script>

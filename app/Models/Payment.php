@@ -13,15 +13,16 @@ class Payment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
-        'type',
-        'related_id',
-        'year',
-        'reference_code',
-        'amount',
-        'payment_date',
-        'approved',
+        'user_id', 
+        'amount', 
+        'type', 
+        'year', 
+        'related_id', 
+        'status',
+        'membership_code', 
+        'transaction_code'  
     ];
+
 
     protected $casts = [
         'payment_date' => 'date',

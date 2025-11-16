@@ -15,6 +15,13 @@
     @endif
 @endauth
 
+@php
+$statusLabels = [
+    'approved' => 'تایید شده',
+    'pending'  => 'در انتظار',
+    'rejected' => 'رد شده',
+];
+@endphp
 
 <div class="container py-4">
 
@@ -22,13 +29,15 @@
 
     <div class="card mb-4">
         <div class="card-body d-flex align-items-center">
-            <img src="{{ $user->profile && $user->profile->photo ? asset('storage/' . $user->profile->photo) : asset('images/default-avatar.png') }}" alt="عکس کاربر" class="img-thumbnail me-3" style="max-height: 120px;">
+            <img src="{{ $user->profile && $user->profile->photo ? asset('storage/photos/' . $user->profile->photo) : asset('images/default-avatar.png') }}" alt="عکس کاربر" class="img-thumbnail me-3" style="max-height: 120px;">
+
             <div>
                 <h5 style="font-family: Vazirmatn;" class="mb-3">
                     {{ $user->profile->first_name ?? '' }} {{ $user->profile->last_name ?? '' }}
                 </h5>
                 <small class="text-muted mb-2">
-                    وضعیت عضویت: {{ $user->profile->membership_status ?? 'تعریف نشده' }}
+                    وضعیت عضویت:
+                    {{ $user->profile->membership_status ? ($statusLabels[$user->profile->membership_status] ?? $user->profile->membership_status) : 'تعریف نشده' }}
                 </small><br>
                 <small class="text-muted">
                     تاریخ عضویت:
@@ -47,8 +56,8 @@
             <div class="card">
                 <div class="card-header">مشخصات کاربری</div>
                 <div class="card-body">
-                    <p><strong>نام:</strong> {{ auth()->user()->name }}</p>
-                    <p><strong>ایمیل:</strong> {{ auth()->user()->email }}</p>
+                    <p><strong>نام:</strong> {{ $user->profile->first_name ?? '' }} {{ $user->profile->last_name ?? '' }}</p>
+                    <p><strong>شماره تلفن:</strong> {{ $user->phone }}</p>
                     <a href="{{ route('dashboard.profile') }}" class="btn btn-sm btn-outline-primary">ویرایش مشخصات</a>
                 </div>
             </div>
@@ -62,7 +71,7 @@
                 <div class="card-header">پرداخت‌ها</div>
                 <div class="card-body">
                     <p>لیست تراکنش‌های اخیر شما در این بخش نمایش داده خواهد شد.</p>
-                    <a href="{{ route('dashboard.payments') }}" class="btn btn-sm btn-outline-primary">پرداخت جدید</a>
+                    <a href="{{ route('dashboard.payments.index') }}" class="btn btn-sm btn-outline-primary">پرداخت جدید</a>
                 </div>
             </div>
         </div>

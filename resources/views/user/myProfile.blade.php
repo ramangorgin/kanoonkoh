@@ -213,6 +213,7 @@ $(document).ready(function() {
         initialValueType: 'persian',
         autoClose: true,
         observer: true,
+        persianDigit: true,
         calendar: { persian: { locale: 'fa' } }
     });
 

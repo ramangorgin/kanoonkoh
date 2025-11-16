@@ -1,218 +1,186 @@
 @extends('user.layout')
 
-@section('title', 'پرداخت‌ها')
-
-@section('breadcrumb')
-    <a href="{{ route('dashboard.index') }}">داشبورد</a> / <span>پرداخت‌ها</span>
-@endsection
+@section('title', 'پرداخت‌های من')
 
 @section('content')
+<div class="container py-5" data-aos="fade-up">
+    <h2 class="text-center mb-4"><i class="bi bi-wallet2 text-primary"></i> پرداخت‌های من</h2>
 
-@php
-    // سال جاری شمسی
-    $currentYear = jdate()->getYear();
+    {{-- فرم پرداخت جدید --}}
+    <div class="card shadow-lg border-0 mb-5 animate__animated animate__fadeIn">
+        <div class="card-body">
+            <h5 class="card-title mb-4">
+                <i class="bi bi-plus-circle text-success"></i> ثبت پرداخت جدید
+            </h5>
 
-    // تابع تبدیل اعداد انگلیسی به فارسی
-    function toPersianNumber($number) {
-        $farsiDigits = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
-        return str_replace(range(0, 9), $farsiDigits, $number);
-    }
-@endphp
+            <form id="paymentForm" method="POST" action="{{ route('dashboard.payments.store') }}">
+                @csrf
+                <div class="row g-3 align-items-end">
 
-<div class="container my-5">
-    <h5 class="mb-4">ثبت پرداخت جدید</h5>
+                    {{-- موضوع پرداخت --}}
+                    <div class="col-md-4">
+                        <label class="form-label">موضوع پرداخت</label>
+                        <select name="type" id="payment_type" class="form-select" required>
+                            <option value="">انتخاب کنید...</option>
+                            <option value="membership">حق عضویت سالانه</option>
+                            <option value="program">ثبت‌نام در برنامه</option>
+                            <option value="course">ثبت‌نام در دوره</option>
+                        </select>
+                    </div>
 
-    {{-- نمایش پیام موفقیت یا خطا --}}
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-    @if($errors->any())
-        <div class="alert alert-danger">
-            <ul class="mb-0">
-                @foreach($errors->all() as $err)
-                    <li>{{ $err }}</li>
-                @endforeach
-            </ul>
+                    {{-- مبلغ --}}
+                    <div class="col-md-4">
+                        <label class="form-label">مبلغ (تومان)</label>
+                        <input type="number" name="amount" class="form-control" placeholder="مثلاً 250000" required>
+                    </div>
+
+                    {{-- سال عضویت --}}
+                    <div class="col-md-4 d-none" id="membership_year_wrapper">
+                        <label class="form-label">سال عضویت</label>
+                        <select name="year" id="membership_year" class="form-select">
+                            <option value="">انتخاب سال</option>
+                            @php
+                                $currentYear = jdate()->getYear();
+                            @endphp
+                            @for($y = $currentYear - 5; $y <= $currentYear + 5; $y++)
+                                <option value="{{ $y }}">{{ toPersianNumber($y) }}</option>
+                            @endfor
+                        </select>
+                    </div>
+
+                    {{-- انتخاب برنامه یا دوره --}}
+                    <div class="col-md-6 d-none" id="related_item_wrapper">
+                        <label id="related_item_label" class="form-label">انتخاب آیتم</label>
+                        <select name="related_id" id="related_item" class="form-select selectpicker" data-live-search="true">
+                            <option value="">انتخاب کنید...</option>
+                        </select>
+                    </div>
+
+                    {{-- دکمه ثبت --}}
+                    <div class="col-12 text-center mt-3">
+                        <button type="submit" class="btn btn-primary px-5">
+                            <i class="bi bi-check-circle"></i> ثبت پرداخت
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            {{-- پیام موفقیت --}}
+            @if(session('payment_success'))
+                <div class="text-center mt-5 animate__animated animate__fadeInDown">
+                    <div class="card border-success shadow p-4 mx-auto" style="max-width: 400px;">
+                        <i class="bi bi-check-circle text-success display-4"></i>
+                        <h5 class="mt-3 text-success">پرداخت با موفقیت ثبت شد</h5>
+                        <p class="mb-1">شناسه عضویت: <strong>{{ session('payment_success')['membership_code'] }}</strong></p>
+                        <p>شناسه واریز: <strong>{{ session('payment_success')['transaction_code'] }}</strong></p>
+                        <p class="text-muted small mt-2">این شناسه‌ها را در قسمت شناسه واریز بانک خود وارد کنید.</p>
+                    </div>
+                </div>
+            @endif
         </div>
-    @endif
+    </div>
 
-    <form method="POST" action="{{ route('dashboard.payment.store') }}" enctype="multipart/form-data">
-        @csrf
+    {{-- سوابق پرداخت‌ها --}}
+    <div class="card shadow border-0 animate__animated animate__fadeInUp" data-aos="fade-up">
+        <div class="card-body">
+            <h5 class="card-title mb-4"><i class="bi bi-clock-history text-secondary"></i> سوابق پرداخت‌ها</h5>
 
-        <div class="row g-3">
-            {{-- موضوع پرداخت --}}
-            <div class="col-md-4">
-                <label class="form-label">موضوع پرداخت</label>
-                <select name="type" id="payment_type" class="form-select" required>
-                    <option value="">انتخاب کنید...</option>
-                    <option value="membership" {{ old('type')=='membership'?'selected':'' }}>حق عضویت</option>
-                    <option value="program"    {{ old('type')=='program'   ?'selected':'' }}>هزینه برنامه</option>
-                    <option value="course"     {{ old('type')=='course'    ?'selected':'' }}>هزینه دوره</option>
-                </select>
-            </div>
-
-            {{-- سال عضویت --}}
-            <div class="col-md-4 d-none" id="membership_year_wrapper">
-                <label class="form-label">سال عضویت</label>
-                <select name="year" id="membership_year" class="form-select">
-                    <option value="">انتخاب سال</option>
-                    @for($y = $currentYear - 5; $y <= $currentYear + 5; $y++)
-                        <option value="{{ $y }}" {{ old('year')==$y?'selected':'' }}>
-                            {{ toPersianNumber($y) }}
-                        </option>
-                    @endfor
-                </select>
-            </div>
-
-            {{-- انتخاب برنامه یا دوره --}}
-            <div class="col-md-4 d-none" id="related_item_wrapper">
-                <label id="related_item_label" class="form-label">انتخاب آیتم</label>
-                <select name="related_id" id="related_item" class="form-select">
-                    <option value="">انتخاب کنید...</option>
-                </select>
-            </div>
-
-            <div class="row mt-4">
-                {{-- مبلغ پرداخت (ریال) --}}
-                <div class="col-md-6">
-                    <label class="form-label">مبلغ (ریال)</label>
-                    <input type="number" name="amount" class="form-control"
-                        value="{{ old('amount') }}"
-                        placeholder="مبلغ را وارد کنید" required>
+            @if($payments->count())
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>شناسه عضویت</th>
+                                <th>شناسه واریز</th>
+                                <th>مبلغ (تومان)</th>
+                                <th>نوع پرداخت</th>
+                                <th>وضعیت</th>
+                                <th>تاریخ ثبت</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($payments as $payment)
+                                <tr>
+                                    <td>{{ $payment->membership_code ?? '-' }}</td>
+                                    <td>{{ $payment->transaction_code ?? '-' }}</td>
+                                    <td>{{ number_format($payment->amount) }}</td>
+                                    <td>
+                                        @switch($payment->type)
+                                            @case('membership') حق عضویت @break
+                                            @case('program') برنامه @break
+                                            @case('course') دوره @break
+                                        @endswitch
+                                    </td>
+                                    <td>
+                                        @if($payment->approved)
+                                            <span class="badge bg-success">تایید شده</span>
+                                        @else
+                                            <span class="badge bg-warning text-dark">در انتظار بررسی</span>
+                                        @endif
+                                    </td>
+                                    <td>{{ toPersianNumber(jdate($payment->created_at)->format('Y/m/d')) }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
-
-                {{-- تاریخ تراکنش  --}}
-                <div class="col-md-6">
-                    <label class="form-label">تاریخ تراکنش</label>
-                    <input type="text" id="payment_date" class="form-control" name="payment_date" value="{{ old('payment_date') }}" />
-                </div>
-
-            </div>
-
-            <div class="row mt-3">
-                {{-- کد پیگیری تراکنش --}}
-                <div class="col-md-6">
-                    <label class="form-label">کد پیگیری تراکنش</label>
-                    <input type="text" name="transaction_code" id="transaction_code" class="form-control"
-                        value="{{ old('transaction_code') }}"
-                        placeholder="مثلاً ۱۲۳۴۵" required>
-                </div>
-
-                {{-- آپلود رسید --}}
-                <div class="col-md-6">
-                    <label class="form-label">رسید پرداخت (اختیاری)</label>
-                    <input type="file" name="receipt_file" class="form-control">
-                </div>
-            </div>
+            @else
+                <p class="text-center text-muted mt-3">هنوز پرداختی ثبت نکرده‌اید.</p>
+            @endif
         </div>
-
-        <button type="submit" class="btn btn-primary mt-4 w-100">ارسال</button>
-    </form>
-
-    {{-- سوابق پرداخت --}}
-    <hr class="my-5">
-    <h5>سوابق پرداخت شما</h5>
-    <div class="table-responsive">
-        <table class="table table-bordered mt-3">
-            <thead class="table-light">
-                <tr>
-                    <th>مبلغ</th>
-                    <th>کد پیگیری</th>
-                    <th>رسید</th>
-                    <th>وضعیت</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($payments as $p)
-                    <tr>
-                        <td>{{ number_format($p->amount) }} ریال</td>
-                        <td>{{ $p->transaction_code }}</td>
-                        <td>
-                            @if($p->receipt_file)
-                                <a href="{{ asset('storage/'.$p->receipt_file) }}" target="_blank">مشاهده</a>
-                            @else
-                                -
-                            @endif
-                        </td>
-                        <td class="{{ $p->approved ? 'text-success' : 'text-danger' }}">
-                            {{ $p->approved ? 'تأیید شده' : 'در انتظار بررسی' }}
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="text-center">هیچ پرداختی ثبت نشده است.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
     </div>
 </div>
 
+
 @push('scripts')
 
-<!-- لود کتابخانه‌ها اول -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
-
-<!-- اسکریپت اصلی -->
+{{-- کنترل نمایش فیلدها --}}
 <script>
-    // تبدیل اعداد فارسی به انگلیسی
-    function fixPersianNumbers(str) {
-        const persian = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g];
-        const english = ['0','1','2','3','4','5','6','7','8','9'];
-        for (let i = 0; i < 10; i++) {
-            str = str.replace(persian[i], english[i]);
+document.addEventListener("DOMContentLoaded", function() {
+    const paymentType = document.getElementById("payment_type");
+    const membershipWrapper = document.getElementById("membership_year_wrapper");
+    const relatedWrapper = document.getElementById("related_item_wrapper");
+    const relatedLabel = document.getElementById("related_item_label");
+    const relatedSelect = document.getElementById("related_item");
+
+    paymentType.addEventListener("change", function() {
+        const type = this.value;
+        // پیش‌فرض همه پنهان
+        membershipWrapper.classList.add("d-none");
+        relatedWrapper.classList.add("d-none");
+
+        if (type === "membership") {
+            membershipWrapper.classList.remove("d-none");
+        } 
+        else if (type === "program" || type === "course") {
+            relatedWrapper.classList.remove("d-none");
+            relatedLabel.textContent = (type === "program") ? "انتخاب برنامه" : "انتخاب دوره";
+
+            // پاک کردن قبلی‌ها
+            relatedSelect.innerHTML = '<option value="">در حال بارگذاری...</option>';
+            
+            fetch(`/api/${type}s/list`)
+                .then(response => {
+                    if (!response.ok) throw new Error('خطا در دریافت داده‌ها');
+                    return response.json();
+                })
+                .then(data => {
+                    relatedSelect.innerHTML = '<option value="">انتخاب کنید...</option>';
+                    data.forEach(item => {
+                        const opt = document.createElement("option");
+                        opt.value = item.id;
+                        opt.textContent = item.name;
+                        relatedSelect.appendChild(opt);
+                    });
+                    $('.selectpicker').selectpicker('refresh');
+                })
+                .catch(error => {
+                    console.error(error);
+                    relatedSelect.innerHTML = '<option value="">خطا در دریافت داده‌ها</option>';
+                });
         }
-        return str;
-    }
-
-    $(document).ready(function () {
-        // فعال‌سازی تقویم شمسی
-        $('#payment_date').val(fixPersianNumbers($('#payment_date').val()));
-        $('#payment_date').persianDatepicker({
-            format: 'YYYY/MM/DD',
-            initialValue: false,
-            initialValueType: 'persian',
-            autoClose: true,
-            observer: true,
-            calendar: {
-                persian: { locale: 'fa' }
-            }
-        });
-
-        // ارسال فرم: تبدیل اعداد فارسی به انگلیسی
-        $('form').on('submit', function () {
-            let val = $('#payment_date').val();
-            $('#payment_date').val(fixPersianNumbers(val));
-        });
-
-        // نمایش آیتم‌ها بر اساس نوع پرداخت
-        const programs = @json($recentPrograms);
-        const courses  = @json($recentCourses);
-
-        $('#payment_type').on('change', function () {
-            const t = $(this).val();
-            $('#membership_year_wrapper, #related_item_wrapper').addClass('d-none');
-            $('#related_item').empty();
-
-            if (t === 'membership') {
-                $('#membership_year_wrapper').removeClass('d-none');
-            } else if (t === 'program') {
-                $('#related_item_label').text('انتخاب برنامه');
-                programs.forEach(p => {
-                    $('#related_item').append(`<option value="${p.id}">${p.title}</option>`);
-                });
-                $('#related_item_wrapper').removeClass('d-none');
-            } else if (t === 'course') {
-                $('#related_item_label').text('انتخاب دوره');
-                courses.forEach(c => {
-                    $('#related_item').append(`<option value="${c.id}">${c.title}</option>`);
-                });
-                $('#related_item_wrapper').removeClass('d-none');
-            }
-        });
     });
+});
 </script>
 @endpush
 @endsection

@@ -9,7 +9,6 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\UserCoursesController;
 use App\Http\Controllers\EducationalHistoryController;
 
-
 use App\Http\Controllers\RegistrationController;
 
 use App\Http\Controllers\UserDashboardController;
@@ -81,7 +80,6 @@ Route::prefix('dashboard')->name('dashboard.')->middleware('auth')->group(functi
     Route::put('/educational-histories/{id}', [EducationalHistoryController::class, 'update'])->name('educationalHistory.update');
     Route::delete('/educational-histories/{id}', [EducationalHistoryController::class, 'destroy'])->name('educationalHistory.destroy');
 
-
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
     Route::post('/profile', [ProfileController::class, 'store'])->name('profile.store');
     Route::put('/profile/{user}', [ProfileController::class, 'update'])->name('profile.update');
@@ -89,13 +87,16 @@ Route::prefix('dashboard')->name('dashboard.')->middleware('auth')->group(functi
     Route::get('/medical-record', [MedicalRecordController::class, 'show'])->name('medicalRecord.show');
     Route::put('/medical-record', [MedicalRecordController::class, 'update'])->name('medicalRecord.update');
 
-    Route::get('/payments', [PaymentController::class, 'UserIndex'])->name('payments');
-    Route::post('/payment', [PaymentController::class, 'store'])->name('payment.store');
+    Route::get('/my-payments', [PaymentController::class, 'UserIndex'])->name('payments.index');
+    Route::post('/my-payments', [PaymentController::class, 'store'])->name('payments.store');
 
     Route::get('/settings', [UserDashboardController::class, 'settings'])->name('settings');
     Route::post('/settings', [SettingsController::class, 'updatePassword'])->name('settings.updatePassword');
 
 });
+
+Route::get('/api/programs/list', [PaymentController::class, 'getPrograms']);
+Route::get('/api/courses/list', [PaymentController::class, 'getCourses']);
 
 // Registratoins for Users:
 

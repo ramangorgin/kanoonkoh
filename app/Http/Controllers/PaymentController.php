@@ -10,59 +10,96 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Morilog\Jalali\Jalalian;
+use Illuminate\Support\Facades\Session;
 
 class PaymentController extends Controller
 {
-      public function UserIndex()
+    
+    /**
+     * نمایش فرم پرداخت و سوابق کاربر
+     */
+    public function UserIndex()
     {
         $user = Auth::user();
+        $payments = Payment::where('user_id', $user->id)
+            ->latest()
+            ->get();
 
-        $recentPrograms = $user->programs()->latest('program_user.created_at')->take(10)->get(['programs.id', 'programs.title']);
-        $recentCourses = $user->courses()->latest('course_user.created_at')->take(10)->get(['courses.id', 'courses.title']);
-
-        $currentYear = Jalalian::now()->getYear();
-        $membershipYears = range($currentYear - 5, $currentYear + 5);
-
-        $payments = $user->payments()->latest()->get();
-
-        return view('user.myPayments', compact(
-            'recentPrograms',
-            'recentCourses',
-            'membershipYears',
-            'payments'
-        ));
+        return view('user.myPayments', compact('payments'));
     }
 
+    /**
+     * ذخیره پرداخت جدید
+     */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'type' => 'required|string|in:membership,program,course',
-            'related_id' => 'nullable|numeric',
-            'year' => 'nullable|string',
-            'amount' => 'required|numeric|min:1',
-            'payment_date' => 'nullable|date',
-            'transaction_code' => 'required|string',
-            'receipt_file' => 'nullable|file|mimes:jpg,png,pdf|max:2048',
+        $request->validate([
+            'type' => 'required|in:membership,program,course',
+            'amount' => 'required|numeric|min:1000',
+            'year' => 'nullable|integer',
+            'related_id' => 'nullable|integer',
+            'description' => 'nullable|string|max:500',
+        ], [
+            'type.required' => 'موضوع پرداخت الزامی است.',
+            'amount.required' => 'مبلغ را وارد کنید.',
+            'amount.min' => 'حداقل مبلغ باید ۱۰۰۰ تومان باشد.',
         ]);
 
-        $validated['payment_date'] = Jalalian::fromFormat('Y/m/d', $this->convertNumbersToEnglish($validated['payment_date']))->toCarbon()->toDateString();
+        $user = Auth::user();
 
+        // شناسه عضویت (در آینده هنگام تایید اکانت کاربر ست می‌شود)
+        $membershipCode = $user->membership_code ?? null;
 
-        if ($request->hasFile('receipt_file')) {
-            $validated['receipt_file'] = $request->file('receipt_file')->store('receipts', 'public');
-        }
+        // شناسه واریز ده‌رقمی تصادفی
+        $transactionCode = random_int(1000000000, 9999999999);
 
-        $validated['user_id'] = Auth::id();
+        // ذخیره پرداخت
+        $payment = new Payment([
+            'user_id'          => $user->id,
+            'amount'           => $request->amount,
+            'type'             => $request->type,
+            'year'             => $request->year,
+            'related_id'       => $request->related_id,
+            'description'      => $request->description,
+            'membership_code'  => $membershipCode,
+            'transaction_code' => $transactionCode,
+            'status'           => 'pending',
+        ]);
 
-        Payment::create($validated);
+        $payment->save();
 
-        return redirect()->back()->with('success', 'پرداخت با موفقیت ثبت شد.');
+        // ارسال شناسه‌ها به Blade از طریق Session
+        Session::flash('payment_success', [
+            'membership_code' => $membershipCode ?? 'نامشخص',
+            'transaction_code' => $transactionCode,
+        ]);
+
+        return redirect()->route('dashboard.payments.index')
+            ->with('status', 'پرداخت با موفقیت ثبت شد.');
     }
-    private function convertNumbersToEnglish($string)
+
+    /**
+     * فهرست برنامه‌ها (برای AJAX)
+     */
+    public function getPrograms()
     {
-        $persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
-        $english = ['0','1','2','3','4','5','6','7','8','9'];
-        return str_replace($persian, $english, $string);
+        $programs = Program::select('id', 'name')
+            ->orderBy('name')
+            ->get();
+
+        return response()->json($programs);
+    }
+
+    /**
+     * فهرست دوره‌ها (برای AJAX)
+     */
+    public function getCourses()
+    {
+        $courses = Course::select('id', 'name')
+            ->orderBy('name')
+            ->get();
+
+        return response()->json($courses);
     }
 
     public function AdminIndex()
