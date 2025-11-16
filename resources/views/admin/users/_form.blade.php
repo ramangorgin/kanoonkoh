@@ -1,3 +1,7 @@
+@php
+    $user = $user ?? new \App\Models\User();
+@endphp
+
 <div class="row g-4">
 
     {{-- اطلاعات حساب --}}

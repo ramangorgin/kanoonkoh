@@ -21,7 +21,6 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminPaymentController;
 
-
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\UserController;
@@ -67,9 +66,6 @@ Route::get('/programs/{program}', [ProgramController::class, 'show'])->name('pro
 Route::get('/courses', [CourseController::class, 'archive'])->name('courses.archive');
 Route::get('/courses/{course}', [CourseController::class, 'show'])->name('courses.show');
 
-//general Reports
-Route::get('/reports', [ReportController::class, 'archive'])->name('reports.archive');
-Route::get('/reports/{id}', [ReportController::class, 'show'])->name('reports.show');
 
 
 //User Dashboard routes:

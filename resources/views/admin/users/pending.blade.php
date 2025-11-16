@@ -102,7 +102,7 @@ $(document).ready(function() {
             confirmButtonColor: '#198754'
         }).then((result) => {
             if (result.isConfirmed) {
-                $.post(`/admin/users/${id}/approve`, {_token: '{{ csrf_token() }}'}, function() {
+                $.post(`{{ url('admin/users') }}/${id}/approve`, {_token: '{{ csrf_token() }}'}, function() {
                     Swal.fire({
                         icon: 'success',
                         title: 'عضویت تایید شد ✅',
@@ -130,7 +130,7 @@ $(document).ready(function() {
             confirmButtonColor: '#dc3545'
         }).then((result) => {
             if (result.isConfirmed) {
-                $.post(`/admin/users/${id}/reject`, {_token: '{{ csrf_token() }}'}, function() {
+                $.post(`{{ url('admin/users') }}/${id}/reject`, {_token: '{{ csrf_token() }}'}, function() {
                     Swal.fire({
                         icon: 'success',
                         title: 'عضویت رد شد ❌',

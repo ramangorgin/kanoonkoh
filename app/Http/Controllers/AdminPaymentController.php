@@ -35,8 +35,15 @@ class AdminPaymentController extends Controller
 
     public function export()
     {
+        return "Export route works ✅";
+    }
+
+    /*
+    public function export()
+    {
         return Excel::download(new PaymentsExport, 'payments.xlsx');
     }
+    */
 
     public function show($id)
     {
@@ -68,7 +75,7 @@ class AdminPaymentController extends Controller
             'date' => jdate($payment->created_at)->format('Y/m/d H:i'),
             'status_text' => $statusMap[$payment->status]['text'],
             'status_color' => $statusMap[$payment->status]['color'],
-            'membership_code' => $payment->membership_code,
+            'membership_code' => $payment->user->profile->membership_id ?? '-',
             'user_id' => $payment->user->id,
             'user_name' => $payment->user->profile->first_name . ' ' . $payment->user->profile->last_name,
             'user_phone' => $payment->user->phone,

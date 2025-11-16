@@ -138,7 +138,7 @@
     <header class="topbar animate__animated animate__fadeInDown">
         <div class="d-flex align-items-center">
             <button class="btn btn-outline-primary sidebar-toggle me-3" id="sidebarToggle"><i class="bi bi-list"></i></button>
-            <h5 class="m-0 fw-bold"><i class="bi bi-speedometer2 text-primary me-2"></i> داشبورد مدیریت</h5>
+            <h5 class="m-0 fw-bold"><i class="bi bi-speedometer2 me-2"></i> داشبورد مدیریت</h5>
         </div>
 
         <div class="d-flex align-items-center gap-3">

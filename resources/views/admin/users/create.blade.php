@@ -10,7 +10,8 @@
 
     <form action="{{ route('admin.users.store') }}" method="POST" class="card p-4 shadow-sm border-0">
         @csrf
-        @include('admin.users._form')
+        @include('admin.users._form', ['user' => null])
+
 
         <div class="mt-4 text-end">
             <button type="submit" class="btn btn-success px-4">

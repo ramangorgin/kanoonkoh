@@ -9,7 +9,7 @@
         <h4 class="fw-bold text-primary">
             <i class="bi bi-credit-card"></i> مدیریت پرداخت‌ها
         </h4>
-        <a href="{{ route('admin.payments.export') }}" class="btn btn-success">
+        <a href="{{ url('admin/payments/export') }}" class="btn btn-success">
             <i class="bi bi-file-earmark-excel"></i> خروجی اکسل
         </a>
     </div>
@@ -48,9 +48,9 @@
                                         <a href="{{ route('admin.courses.show', $payment->related_id) }}" class="badge bg-warning text-decoration-none">دوره</a>
                                     @endif
                                 </td>
-                                <td>{{ number_format($payment->amount) }}</td>
+                                <td>{{ toPersianNumber(number_format($payment->amount)) }}</td>
                                 <td><code>{{ $payment->transaction_code }}</code></td>
-                                <td>{{ jdate($payment->created_at)->format('Y/m/d H:i') }}</td>
+                                <td>{{ toPersianNumber(jdate($payment->created_at)->format('Y/m/d H:i')) }}</td>
                                 <td>
                                     @if($payment->status == 'pending')
                                         <span class="badge bg-secondary">در انتظار</span>
@@ -68,8 +68,7 @@
                                         <button class="btn btn-sm btn-outline-danger reject-btn" data-id="{{ $payment->id }}">
                                             <i class="bi bi-x-circle"></i>
                                         </button>
-                                    @else
-                                        <span class="text-muted">-</span>
+
                                     @endif
                                     <button class="btn btn-sm btn-outline-info details-btn" 
                                             data-id="{{ $payment->id }}">
@@ -163,11 +162,13 @@ table.dataTable thead th {
 <script>
 $(document).on('click', '.details-btn', function() {
     let id = $(this).data('id');
+    
     console.log("🔹 Payment ID:", id);
     $('#paymentDetails').html('<div class="spinner-border text-primary" role="status"></div><p>در حال بارگذاری...</p>');
     $('#paymentModal').modal('show');
 
-    $.get(`/admin/payments/${id}`, function(data) {
+    $.get(`{{ url('admin/payments') }}/${id}`, function(data) {
+
         $('#paymentDetails').html(`
             <div class="text-start">
                 <h5 class="fw-bold mb-3 text-primary">اطلاعات پرداخت</h5>
@@ -225,9 +226,10 @@ $(document).ready(function() {
             confirmButtonColor: '#28a745'
         }).then(result => {
             if(result.isConfirmed) {
-                $.post(`/admin/payments/${id}/approve`, {_token: '{{ csrf_token() }}'}, function() {
+                $.post(`{{ url('admin/payments') }}/${id}/approve`, {_token: '{{ csrf_token() }}'}, function() {
                     Swal.fire('انجام شد', 'پرداخت تأیید شد ✅', 'success').then(() => location.reload());
                 });
+
             }
         });
     });
@@ -245,7 +247,7 @@ $(document).ready(function() {
             confirmButtonColor: '#dc3545'
         }).then(result => {
             if(result.isConfirmed) {
-                $.post(`/admin/payments/${id}/reject`, {_token: '{{ csrf_token() }}'}, function() {
+                $.post(`{{ url('admin/payments') }}/${id}/reject`, {_token: '{{ csrf_token() }}'}, function() {
                     Swal.fire('انجام شد', 'پرداخت رد شد ❌', 'success').then(() => location.reload());
                 });
             }
