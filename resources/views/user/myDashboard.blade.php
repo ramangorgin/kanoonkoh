@@ -10,7 +10,7 @@
     @if(auth()->user()->role === 'admin')
         <div class="alert alert-info mt-3">
             <strong>شما ادمین هستید.</strong>
-            <a href="{{ url('/admin') }}" class="btn btn-sm btn-primary ml-2">ورود به پنل مدیریت</a>
+            <a href="{{ route('admin.dashboard') }}" class="btn btn-sm btn-primary ml-2">ورود به پنل مدیریت</a>
         </div>
     @endif
 @endauth

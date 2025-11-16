@@ -2,53 +2,67 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
 use App\Models\User;
-use App\Models\Course;
-use App\Models\Program;
-use App\Models\Report;
+use App\Models\Profile;
 use App\Models\Payment;
-use App\Models\ProgramSurvey;
-use App\Models\CourseSurvey;
-use App\Models\Ticket;
-use App\Models\Registration;
+use Carbon\Carbon;
+use Morilog\Jalali\Jalalian;
 
 class AdminDashboardController extends Controller
 {
+    /**
+     * نمایش داشبورد ادمین
+     */
     public function index()
     {
-        // آمار کلی
-        $usersCount = User::count();
-        $coursesCount = Course::count();
-        $programsCount = Program::count();
-        $reportsCount = Report::count();
+        // === آمار کلی ===
+        $totalUsers = User::count();
+        $pendingMemberships = Profile::where('membership_status', 'pending')->count();
+        $approvedPayments = Payment::where('status', 'approved')->count();
+        $totalAmount = Payment::where('status', 'approved')->sum('amount');
 
-        // جدیدترین پرداختی‌ها
-        $latestPayments = Payment::with('user')->latest()->take(5)->get();
+        $stats = [
+            'users' => $totalUsers,
+            'pending_memberships' => $pendingMemberships,
+            'approved_payments' => $approvedPayments,
+            'total_amount' => $totalAmount,
+        ];
 
-        // ثبت‌نام‌های برنامه
-        $latestProgramRegs = Registration::with(['user', 'relatedProgram'])
-            ->where('type', 'program')
+        // === پرداخت‌های اخیر ===
+        $latestPayments = Payment::with('user.profile')
             ->latest()
             ->take(5)
             ->get();
 
-        // ثبت‌نام‌های دوره
-        $latestCourseRegs = Registration::with(['user', 'relatedCourse'])
-            ->where('type', 'course')
+        // === کاربران جدید ===
+        $latestUsers = User::with('profile')
             ->latest()
             ->take(5)
             ->get();
 
-        return view('admin.admin', compact(
-            'usersCount',
-            'coursesCount',
-            'programsCount',
-            'reportsCount',
-            'latestPayments',
-            'latestProgramRegs',
-            'latestCourseRegs'
-        ));
+        // === داده‌های نمودار پرداخت‌ها (۱۲ ماه اخیر) ===
+        $months = [];
+        $values = [];
+
+        for ($i = 11; $i >= 0; $i--) {
+            $month = Carbon::now()->subMonths($i);
+            $label = Jalalian::fromCarbon($month)->format('Y/m');
+
+            $sum = Payment::whereYear('created_at', $month->year)
+                ->whereMonth('created_at', $month->month)
+                ->where('status', 'approved')
+                ->sum('amount');
+
+            $months[] = $label;
+            $values[] = (int) $sum;
+        }
+
+        $chart = [
+            'months' => $months,
+            'values' => $values,
+        ];
+
+        return view('admin.dashboard', compact('stats', 'latestPayments', 'latestUsers', 'chart'));
     }
 }
-

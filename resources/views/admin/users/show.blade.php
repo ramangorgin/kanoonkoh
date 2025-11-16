@@ -1,135 +1,245 @@
 @extends('admin.layout')
 
-@section('breadcrumb')
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('admin.users.index') }}">کاربران</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ $user->email }}</li>
-        </ol>
-    </nav>
-@endsection
+@section('title', 'مشاهده کاربر')
 
 @section('content')
+<div class="container-fluid py-4 animate__animated animate__fadeIn">
 
-
-
-    <h3 class="mb-3">مشخصات کامل کاربر</h3>
-
-    <div class="card mb-4">
-        <div class="card-header">اطلاعات کاربری</div>
-        <div class="card-body">
-            <p><strong>ایمیل:</strong> {{ $user->email }}</p>
-            <p><strong>نقش:</strong> {{ $user->role === 'admin' ? 'ادمین' : 'کاربر عادی' }}</p>
+    {{-- هدر صفحه --}}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold text-dark mb-0">
+            <i class="bi bi-person-badge-fill text-primary me-2"></i> جزئیات کاربر
+        </h4>
+        <div class="d-flex gap-2">
+            <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-secondary">
+                <i class="bi bi-pencil-square"></i> ویرایش
+            </a>
+            <button class="btn btn-danger delete-user" data-id="{{ $user->id }}">
+                <i class="bi bi-trash3"></i> حذف
+            </button>
         </div>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-header">مشخصات فردی</div>
-            <div class="col-md-9 ps-3 py-3">
-                @if($user->profile?->photo)
-                    <a href="{{ asset('storage/' . $user->profile->photo) }}" target="_blank">
-                        <img src="{{ asset('storage/' . $user->profile->photo) }}" class="img-thumbnail" style="width: 100px;">                    </a>
-                @else
-                    <p class="text-muted">تصویری ثبت نشده است</p>
-                @endif
+    {{-- اطلاعات پروفایل --}}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3 text-primary">
+                <i class="bi bi-person-lines-fill"></i> اطلاعات شخصی
+            </h5>
+
+            <div class="row g-3">
+                <div class="col-md-3"><strong>نام:</strong> {{ $user->profile->first_name ?? '-' }}</div>
+                <div class="col-md-3"><strong>نام خانوادگی:</strong> {{ $user->profile->last_name ?? '-' }}</div>
+                <div class="col-md-3"><strong>شماره تماس:</strong> {{ toPersianNumber($user->phone) }}</div>
+                <div class="col-md-3"><strong>کد ملی:</strong> {{ toPersianNumber($user->profile->national_id ?? '-') }}</div>
+
+                <div class="col-md-3"><strong>تاریخ تولد:</strong> {{ isset($user->profile->birth_date) ? toPersianNumber(jdate($user->profile->birth_date)->format('Y/m/d')) : '-' }}</div>
+                <div class="col-md-3"><strong>وضعیت تأهل:</strong> {{ $user->profile->marital_status ?? '-' }}</div>
+                <div class="col-md-3"><strong>تحصیلات:</strong> {{ $user->profile->education ?? '-' }}</div>
+                <div class="col-md-3"><strong>شغل:</strong> {{ $user->profile->job ?? '-' }}</div>
             </div>
-            <div class="ps-3">
-                <p><strong>نام:</strong> {{ $user->profile->first_name ?? '---'}}</p>
-                <p><strong>نام خانوادگی:</strong> {{ $user->profile->last_name ?? '---'}}</p>
-                <p><strong>نام پدر:</strong> {{ $user->profile->father_name ?? '---'}}</p>
-                <p><strong>کد ملی:</strong> {{ $user->profile->national_id ?? '---'}}</p>
-                <p><strong>تاریخ تولد:</strong> {{ $user->profile && $user->profile->birth_date ? \Morilog\Jalali\Jalalian::fromDateTime($user->profile->birth_date)->format('Y/m/d') : '---' }}</p>
-                <p><strong>جنسیت:</strong>
-                    @if($user->profile && $user->profile->gender)
-                        @switch($user->profile->gender)
-                            @case('male')
-                                مرد
-                                @break
+        </div>
+    </div>
 
-                            @case('female')
-                                زن
-                                @break
+    {{-- اطلاعات عضویت --}}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3 text-success">
+                <i class="bi bi-patch-check-fill"></i> وضعیت عضویت
+            </h5>
 
-                            @default
-                                سایر
-                        @endswitch
-                    @else
-                        ---
+            @if($user->profile)
+                <div class="row g-3">
+                    <div class="col-md-3"><strong>شناسه عضویت:</strong> {{ toPersianNumber($user->profile->membership_id ?? '-') }}</div>
+                    <div class="col-md-3"><strong>نوع عضویت:</strong> {{ $user->profile->membership_type ?? '-' }}</div>
+                    <div class="col-md-3"><strong>تاریخ شروع:</strong> {{ isset($user->profile->membership_start) ? toPersianNumber(jdate($user->profile->membership_start)->format('Y/m/d')) : '-' }}</div>
+                    <div class="col-md-3"><strong>تاریخ پایان:</strong> {{ isset($user->profile->membership_expiry) ? toPersianNumber(jdate($user->profile->membership_expiry)->format('Y/m/d')) : '-' }}</div>
+                </div>
+
+                <div class="mt-3">
+                    <strong>وضعیت فعلی:</strong>
+                    @if($user->profile->membership_status === 'approved')
+                        <span class="badge bg-success">تایید شده</span>
+                    @elseif($user->profile->membership_status === 'pending')
+                        <span class="badge bg-warning text-dark">در انتظار</span>
+                    @elseif($user->profile->membership_status === 'rejected')
+                        <span class="badge bg-danger">رد شده</span>
                     @endif
-                </p>
-                <p><strong>شماره تماس:</strong> {{ $user->profile->phone ?? '---'}}</p>
-                <p><strong>استان:</strong> {{ $user->profile->province ?? '---'}}</p>
-                <p><strong>شهر:</strong> {{ $user->profile->city ?? '---'}}</p>
-                <p><strong>آدرس:</strong> {{ $user->profile->address ?? '---'}}</p>
-                <p><strong>کد پستی:</strong> {{ $user->profile->postal_code ?? '---'}}</p>
-                <p><strong>تاریخ عضویت:</strong> {{ $user->profile->membership_date ?? '---'}}</p>
-                <p><strong>سطح عضویت:</strong> {{ $user->profile->membership_level ?? '---'}}</p>
-                <p><strong>وضعیت عضویت:</strong> {{ $user->profile->membership_status ?? '---'}}</p>
-                <p><strong>امتیاز:</strong> {{ $user->profile->points ?? '---'}}</p>
-                <p><strong>قد:</strong> {{ $user->profile->height ?? '---'}} cm</p>
-                <p><strong>وزن:</strong> {{ $user->profile->weight ?? '---'}} kg</p>
-                <p><strong>بیماری‌ها:</strong> {{ $user->profile->medical_conditions ?? '---'}}</p>
-                <p><strong>آلرژی‌ها:</strong> {{ $user->profile->allergies ?? '---'}}</p>
-                <p><strong>شغل:</strong> {{ $user->profile->job ?? '---'}}</p>
-                <p><strong>معرف:</strong> {{ $user->profile->referrer ?? '---'}}</p>
-                <p><strong>گروه خونی:</strong> {{ $user->profile->blood_type ?? '---'}}</p>
-                <p><strong>سابقه عمل جراحی:</strong> {{ $user->profile->had_surgery ?? '---'}}</p>
-                <p><strong>داروهای مصرفی:</strong> {{ $user->profile->medications ?? '---'}}</p>
-                <p><strong>نام تماس اضطراری:</strong> {{ $user->profile->emergency_contact_name ?? '---'}}</p>
-                <p><strong>نسبت تماس اضطراری:</strong> {{ $user->profile->emergency_contact_relation ?? '---'}}</p>
-                <p><strong>تلفن اضطراری:</strong> {{ $user->profile->emergency_phone ?? '---'}}</p>
+                </div>
 
-            </div>
-        </div>
-    </div>
-  
-
-    <div class="container-fluid px-4 mx-5">
-
-    {{-- بیمه ورزشی --}}
-    <div class="card mb-4" style="max-width: 900px; margin: auto;">
-        <div class="card-header fw-bold">بیمه ورزشی</div>
-        <div class="card-body">
-            @if($user->insurance)
-                <p><strong>کد بیمه:</strong> {{ $user->insurance->code ?? '---' }}</p>
-                <p><strong>تاریخ شروع:</strong> {{ $user->insurance->start_date ? \Morilog\Jalali\Jalalian::fromDateTime($user->insurance->start_date)->format('Y/m/d') : '---' }}</p>
-                <p><strong>تاریخ پایان:</strong> {{ $user->insurance->end_date ? \Morilog\Jalali\Jalalian::fromDateTime($user->insurance->end_date)->format('Y/m/d') : '---' }}</p>
-            @else
-                <p class="text-muted">اطلاعات بیمه ثبت نشده است.</p>
+                {{-- دکمه‌های تایید یا رد عضویت --}}
+                @if($user->profile->membership_status === 'pending')
+                    <div class="mt-4">
+                        <button class="btn btn-success approve-user" data-id="{{ $user->profile->id }}">
+                            <i class="bi bi-check-circle"></i> تایید عضویت
+                        </button>
+                        <button class="btn btn-danger reject-user" data-id="{{ $user->profile->id }}">
+                            <i class="bi bi-x-circle"></i> رد عضویت
+                        </button>
+                    </div>
+                @endif
             @endif
         </div>
     </div>
 
-    {{-- سوابق پرداخت --}}
-    <div class="card mb-4" style="max-width: 900px; margin: auto;">
-        <div class="card-header fw-bold">سوابق پرداخت</div>
+    {{-- پرونده پزشکی --}}
+    <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
-            @if($user->payments && $user->payments->count())
+            <h5 class="card-title mb-3 text-danger">
+                <i class="bi bi-heart-pulse-fill"></i> پرونده پزشکی
+            </h5>
+            @if($user->medicalRecord)
+                <div class="row g-3">
+                    <div class="col-md-3"><strong>گروه خونی:</strong> {{ $user->medicalRecord->blood_type ?? '-' }}</div>
+                    <div class="col-md-3"><strong>قد:</strong> {{ toPersianNumber($user->medicalRecord->height ?? '-') }}</div>
+                    <div class="col-md-3"><strong>وزن:</strong> {{ toPersianNumber($user->medicalRecord->weight ?? '-') }}</div>
+                </div>
+            @else
+                <p class="text-muted">پرونده پزشکی هنوز ثبت نشده است.</p>
+            @endif
+        </div>
+    </div>
+
+    {{-- سوابق آموزشی --}}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3 text-info">
+                <i class="bi bi-book-fill"></i> سوابق آموزشی
+            </h5>
+            @if($user->educationalHistories->count())
                 <ul class="list-group">
-                    @foreach($user->payments as $payment)
-                        <li class="list-group-item d-flex justify-content-between">
-                            <span>{{ $payment->type === 'program' ? 'برنامه' : ($payment->type === 'course' ? 'دوره' : 'عضویت') }}</span>
-                            <span>{{ \Morilog\Jalali\Jalalian::fromDateTime($payment->date)->format('Y/m/d') }}</span>
+                    @foreach($user->educationalHistories as $edu)
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            دوره {{ $edu->federation_course_id }} - تاریخ صدور: 
+                            <span>{{ toPersianNumber(jdate($edu->issue_date)->format('Y/m/d')) }}</span>
                         </li>
                     @endforeach
                 </ul>
             @else
-                <p class="text-muted">هیچ پرداختی ثبت نشده است.</p>
+                <p class="text-muted">هیچ سابقه آموزشی ثبت نشده است.</p>
+            @endif
+        </div>
+    </div>
+
+    {{-- پرداخت‌ها --}}
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title mb-3 text-primary">
+                <i class="bi bi-credit-card-2-front"></i> آخرین پرداخت‌ها
+            </h5>
+            @if($user->payments->count())
+                <table class="table table-striped text-center align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>مبلغ</th>
+                            <th>نوع پرداخت</th>
+                            <th>وضعیت</th>
+                            <th>تاریخ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($user->payments->take(5) as $p)
+                            <tr>
+                                <td>{{ number_format($p->amount) }} تومان</td>
+                                <td>{{ $p->type === 'membership' ? 'حق عضویت' : ($p->type === 'course' ? 'دوره' : 'برنامه') }}</td>
+                                <td>
+                                    @if($p->status === 'approved')
+                                        <span class="badge bg-success">تایید شده</span>
+                                    @elseif($p->status === 'pending')
+                                        <span class="badge bg-warning text-dark">در انتظار</span>
+                                    @else
+                                        <span class="badge bg-danger">رد شده</span>
+                                    @endif
+                                </td>
+                                <td>{{ toPersianNumber(jdate($p->created_at)->format('Y/m/d')) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @else
+                <p class="text-muted">هیچ پرداختی یافت نشد.</p>
             @endif
         </div>
     </div>
 
 </div>
-
-
 @endsection
 
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+$(function() {
+    // حذف کاربر
+    $('.delete-user').click(function() {
+        const id = $(this).data('id');
+        Swal.fire({
+            title: 'آیا مطمئن هستید؟',
+            text: "کاربر برای همیشه حذف خواهد شد.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'بله حذف شود',
+            cancelButtonText: 'انصراف',
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: `/admin/users/${id}`,
+                    type: 'DELETE',
+                    data: { _token: '{{ csrf_token() }}' },
+                    success: function() {
+                        Swal.fire('حذف شد!', 'کاربر با موفقیت حذف شد.', 'success')
+                            .then(() => window.location.href = '{{ route("admin.users.index") }}');
+                    },
+                    error: function() {
+                        Swal.fire('خطا', 'مشکلی در حذف کاربر پیش آمد.', 'error');
+                    }
+                });
+            }
+        });
+    });
 
-@push('styles')
-<style>
-    .user-info-box p {
-        margin-bottom: 0.5rem;
-        padding-right: 0.5rem;
-    }
-</style>
+    // تایید عضویت
+    $('.approve-user').click(function() {
+        const id = $(this).data('id');
+        Swal.fire({
+            title: 'تایید عضویت؟',
+            text: 'آیا از تایید این کاربر مطمئن هستید؟',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'بله، تایید شود',
+            cancelButtonText: 'انصراف',
+            confirmButtonColor: '#198754'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.post(`/admin/users/${id}/approve`, {_token: '{{ csrf_token() }}'}, function() {
+                    Swal.fire('تایید شد!', 'عضویت کاربر تایید شد ✅', 'success')
+                        .then(() => location.reload());
+                });
+            }
+        });
+    });
+
+    // رد عضویت
+    $('.reject-user').click(function() {
+        const id = $(this).data('id');
+        Swal.fire({
+            title: 'رد عضویت؟',
+            text: 'آیا مطمئن هستید؟',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'بله، رد شود',
+            cancelButtonText: 'انصراف',
+            confirmButtonColor: '#dc3545'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.post(`/admin/users/${id}/reject`, {_token: '{{ csrf_token() }}'}, function() {
+                    Swal.fire('رد شد!', 'عضویت کاربر رد شد ❌', 'success')
+                        .then(() => location.reload());
+                });
+            }
+        });
+    });
+});
+</script>
 @endpush
