@@ -113,6 +113,7 @@ Route::post('/registrations/course/{course}', [RegistrationController::class, 'C
 Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
 
+    Route::get('/users/export', [AdminUserController::class, 'export'])->name('admin.users.export');
     Route::get('/users', [AdminUserController::class, 'index'])->name('admin.users.index');
     Route::get('/users/create', [AdminUserController::class, 'create'])->name('admin.users.create');
     Route::post('/users', [AdminUserController::class, 'store'])->name('admin.users.store');
@@ -125,12 +126,11 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::post('/users/{id}/approve', [AdminUserController::class, 'approveMembership'])->name('admin.users.approve');
     Route::post('/users/{id}/reject', [AdminUserController::class, 'rejectMembership'])->name('admin.users.reject');
 
-    Route::get('/users/export', [AdminUserController::class, 'export'])->name('admin.users.export');
 
+    Route::get('/payments/export', [AdminPaymentController::class, 'export'])->name('admin.payments.export');
     Route::get('/payments', [AdminPaymentController::class, 'index'])->name('admin.payments.index');
     Route::get('/payments/{id}', [AdminPaymentController::class, 'show'])->name('admin.payments.show');
     Route::post('/payments/{id}/approve', [AdminPaymentController::class, 'approve'])->name('admin.payments.approve');
     Route::post('/payments/{id}/reject', [AdminPaymentController::class, 'reject'])->name('admin.payments.reject');
-    Route::get('/payments/export', [AdminPaymentController::class, 'export'])->name('admin.payments.export');
 });
 

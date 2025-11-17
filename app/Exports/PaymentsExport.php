@@ -5,27 +5,51 @@ namespace App\Exports;
 use App\Models\Payment;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
-class PaymentsExport implements FromCollection, WithHeadings, ShouldAutoSize
+class PaymentsExport implements FromCollection, WithHeadings
 {
     public function collection()
     {
-        return Payment::with('user.profile')->get()->map(function($p){
+        $payments = Payment::with('user.profile')->latest()->get();
+
+        return $payments->map(function ($p) {
+
+            $typeMap = [
+                'membership' => 'حق عضویت',
+                'program'    => 'برنامه',
+                'course'     => 'دوره',
+            ];
+
+            $statusMap = [
+                'pending'  => 'در انتظار بررسی',
+                'approved' => 'تأیید شده',
+                'rejected' => 'رد شده',
+            ];
+
             return [
-                'شناسه' => $p->id,
-                'نام کاربر' => $p->user->profile->first_name ?? '' . ' ' . $p->user->profile->last_name ?? '',
-                'نوع پرداخت' => $p->type,
-                'مبلغ (تومان)' => number_format($p->amount),
-                'شناسه واریز' => $p->transaction_code,
-                'وضعیت' => $p->status,
-                'تاریخ ایجاد' => jdate($p->created_at)->format('Y/m/d'),
+                'شناسه عضویت'   => $p->user->profile->membership_id ?? '-',
+                'نام کاربر'      => trim(($p->user->profile->first_name ?? '') . ' ' . ($p->user->profile->last_name ?? '')),
+                'شماره تماس'     => $p->user->phone ?? '-',
+                'نوع پرداخت'     => $typeMap[$p->type] ?? $p->type,
+                'مبلغ (تومان)'   => toPersianNumber(number_format($p->amount ?? 0)),
+                'شناسه واریز'    => $p->transaction_code ?? '-',
+                'وضعیت'          => $statusMap[$p->status] ?? $p->status,
+                'تاریخ ایجاد'    => toPersianNumber(jdate($p->created_at)->format('Y/m/d')),
             ];
         });
     }
 
     public function headings(): array
     {
-        return ['شناسه', 'نام کاربر', 'نوع پرداخت', 'مبلغ (تومان)', 'شناسه واریز', 'وضعیت', 'تاریخ ایجاد'];
+        return [
+            'شناسه عضویت',
+            'نام کاربر',
+            'شماره تماس',
+            'نوع پرداخت',
+            'مبلغ (تومان)',
+            'شناسه واریز',
+            'وضعیت',
+            'تاریخ ایجاد',
+        ];
     }
 }

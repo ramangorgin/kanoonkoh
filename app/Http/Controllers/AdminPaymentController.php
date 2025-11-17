@@ -33,17 +33,12 @@ class AdminPaymentController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function export()
-    {
-        return "Export route works ✅";
-    }
 
-    /*
     public function export()
     {
         return Excel::download(new PaymentsExport, 'payments.xlsx');
     }
-    */
+
 
     public function show($id)
     {

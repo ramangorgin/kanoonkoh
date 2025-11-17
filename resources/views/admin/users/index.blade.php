@@ -47,7 +47,7 @@
                 <tbody>
                     @foreach($users as $user)
                         <tr id="row-{{ $user->id }}">
-                            <td>{{ toPersianNumber($user->id) }}</td>
+                            <td>{{ toPersianNumber($user->profile->membership_id) }}</td>
                             <td>{{ $user->profile->first_name ?? '-' }} {{ $user->profile->last_name ?? '' }}</td>
                             <td>{{ toPersianNumber($user->phone) }}</td>
                             <td>
