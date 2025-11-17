@@ -19,9 +19,13 @@
         @stack('styles')
 
         <style>
-            body{
-                font-family: 'Vazirmatn', sans-serif;
+            body{ font-family: 'Vazirmatn', sans-serif; }
+            .ltr-footer{ direction:ltr !important; text-align:left !important; }
+            .ltr-footer li{
+                display:flex; align-items:center; justify-content:flex-start; gap:.5rem;
             }
+            .ltr-footer li span, .ltr-footer li a{ direction:ltr !important; }
+            .ltr-footer i{ font-size:1rem; }
         </style>
     </head>
     <body>
@@ -104,29 +108,39 @@
 
                 {{-- ستون ۲: تماس با ما --}}
                 <div class="col-md-3">
-                    <h5 class="fw-bold mb-3">تماس با ما</h5>
-                    <ul class="list-unstyled ps-1 fs-6">
-                        <li class="mb-5 mt-5"><i class="bi bi-telephone-fill me-2"></i>۰۲۶۳۳۵۰۸۰۱۸</li>
-                        <li class="mb-5"><i class="bi bi-phone-fill me-2"></i>۰۹۱۰۶۸۷۱۱۸۵</li>
-                        <li class="mb-5"><i class="bi bi-envelope-fill me-2"></i>
-                            <a href="mailto:info@kanoonkoh.ir" class="text-info text-decoration-none">info@kanoonkoh.ir</a>
+                    <h5 class="fw-bold mb-3 text-center">تماس با ما</h5>
+                    <ul class="list-unstyled ps-1 fs-6 ltr-footer">
+                        <li class="mb-5 mt-5">
+                            <i class="bi bi-telephone-fill"></i>
+                            <span>۰۲۶۳۳۵۰۸۰۱۸</span>
                         </li>
-                        <li class="mb-5"><i class="bi bi-instagram me-2"></i>
-                            <a href="https://instagram.com/kanoonkooh" class="text-info text-decoration-none" target="_blank">@kanoonkooh</a>
+                        <li class="mb-5">
+                            <i class="bi bi-phone-fill"></i>
+                            <span>۰۹۱۰۶۸۷۱۱۸۵</span>
                         </li>
-                        <li><i class="bi bi-telegram me-2"></i>
-                            <a href="https://t.me/kanoonkoohgroup" class="text-info text-decoration-none" target="_blank">t.me/kanoonkoohgroup</a>
+                        <li class="mb-5">
+                            <i class="bi bi-envelope-fill"></i>
+                            <a href="#" class="text-info text-decoration-none">رایانامه</a>
+                        </li>
+                        <li class="mb-5">
+                            <i class="bi bi-instagram"></i>
+                            <a href="https://instagram.com/kanoonkooh" class="text-info text-decoration-none" target="_blank">صفحه اینستاگرام</a>
+                        </li>
+                        <li>
+                            <i class="bi bi-telegram"></i>
+                            <a href="https://t.me/kanoonkooh" class="text-info text-decoration-none" target="_blank">کانال تلگرام</a>
                         </li>
                     </ul>
                 </div>
 
+
                 {{-- ستون ۳: لینک‌ها --}}
-                <div class="col-md-3 font-sahel">
+                <div class="col-md-3 font-sahel text-center">
                     <h5 class="fw-bold mb-3">لینک‌های مهم</h5>
-                    <ul class="list-unstyled fs-6 ps-1">
-                        <li class="mb-5 mt-5"><a href="{{ route('courses.archive') }}" class="text-light text-decoration-none">آخرین دوره‌ها</a></li>
-                        <li class="mb-5"><a href="{{ route('programs.archive') }}" class="text-light text-decoration-none">آخرین برنامه‌ها</a></li>
-                        <li><a href="{{ route('conditions') }}" class="text-light text-decoration-none">شرایط عضویت</a></li>
+                    <ul class="list-unstyled fs-6 m-0 p-0 d-flex flex-column align-items-center">
+                        <li class="mb-4 mt-4 w-100"><a href="{{ route('courses.archive') }}" class="text-light text-decoration-none d-inline-block w-100">آخرین دوره‌ها</a></li>
+                        <li class="mb-4 w-100"><a href="{{ route('programs.archive') }}" class="text-light text-decoration-none d-inline-block w-100">آخرین برنامه‌ها</a></li>
+                        <li class="w-100"><a href="{{ route('conditions') }}" class="text-light text-decoration-none d-inline-block w-100">شرایط عضویت</a></li>
                     </ul>
                 </div>
 
