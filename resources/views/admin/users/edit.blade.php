@@ -8,16 +8,15 @@
         <i class="bi bi-pencil-square text-secondary"></i> ویرایش اطلاعات کاربر
     </h4>
 
-    <form action="{{ route('admin.users.update', $user->id) }}" method="POST" class="card p-4 shadow-sm border-0">
+    <form action="{{ route('admin.users.update', $user->id) }}" method="POST" class="card p-4 shadow-sm border-0" enctype="multipart/form-data">
         @csrf
         @method('PUT')
-        @include('admin.users._form')
+        @include('admin.users._form', ['user' => $user, 'jalali' => $jalali])
 
         <div class="mt-4 text-end">
-            <button type="submit" class="btn btn-primary px-4">
-                <i class="bi bi-save"></i> ذخیره تغییرات
-            </button>
+            <button class="btn btn-success">بروزرسانی</button>
         </div>
     </form>
 </div>
+
 @endsection

@@ -53,24 +53,4 @@ class UserDashboardController extends Controller
         return view('user.mySettings');
     }
 
-    // ----------------- Reports -------------------
-    public function reportsIndex()
-    {
-        return view('myReports');
-    }
-
-    public function reportsCreate()
-    {
-        return view('reports.create');
-    }
-
-    public function reportsEdit()
-    {
-        return view('reports.edit');
-    }
-
-    public function reportsShow()
-    {
-        return view('reports.show');
-    }
 }

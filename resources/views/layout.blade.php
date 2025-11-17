@@ -39,7 +39,6 @@
                             <li class="nav-item"><a class="nav-link" href="{{ route('home') }}" style="font-size: 15pt;">خانه</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ route('programs.archive') }}" style="font-size: 15pt;">برنامه‌ها</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ route('courses.archive') }}" style="font-size: 15pt;">دوره‌ها</a></li>
-                            <li class="nav-item"><a class="nav-link" href="{{ route('reports.archive') }}" style="font-size: 15pt;">گزارش‌ها</a></li>
                         </ul>
                     </div>
 
@@ -73,7 +72,6 @@
                         <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">خانه</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ route('programs.archive') }}">برنامه‌ها</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ route('courses.archive') }}">دوره‌ها</a></li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('reports.archive') }}">گزارش‌ها</a></li>
                     </ul>
 
                     <hr>
@@ -128,7 +126,6 @@
                     <ul class="list-unstyled fs-6 ps-1">
                         <li class="mb-5 mt-5"><a href="{{ route('courses.archive') }}" class="text-light text-decoration-none">آخرین دوره‌ها</a></li>
                         <li class="mb-5"><a href="{{ route('programs.archive') }}" class="text-light text-decoration-none">آخرین برنامه‌ها</a></li>
-                        <li class="mb-5"><a href="{{ route('reports.archive') }}" class="text-light text-decoration-none">آخرین گزارش‌ها</a></li>
                         <li><a href="{{ route('conditions') }}" class="text-light text-decoration-none">شرایط عضویت</a></li>
                     </ul>
                 </div>
