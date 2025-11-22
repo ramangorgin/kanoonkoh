@@ -162,7 +162,7 @@ class AuthController extends Controller
             'photo'      => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
             'national_card' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
             'marital_status' => ['nullable', 'in:مجرد,متاهل'],
-            'emergency_phone' => ['nullable', 'regex:/^09[0-9]{9}$/'],
+            'emergency_phone' => ['nullable'],
             'referrer'   => ['nullable', 'string', 'max:100'],
             'education'  => ['nullable', 'string', 'max:100'],
             'job'        => ['nullable', 'string', 'max:100'],
