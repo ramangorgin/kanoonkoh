@@ -348,4 +348,50 @@ class AdminUserController extends Controller
     {
         return Excel::download(new UsersExport, 'users.xlsx');
     }
+
+    /** نمایش جزئیات یک کاربر **/
+    public function show($id)
+    {
+        $user = User::with([
+            'profile',
+            'medicalRecord',
+            'educationalHistories',
+            'payments', // چون در show.blade.php استفاده شده
+        ])->findOrFail($id);
+
+        return view('admin.users.show', compact('user'));
+    }
+
+    /** عضویت‌های در انتظار (اختیاری اگر لازم دارید) **/
+    public function pendingMemberships()
+    {
+        $users = User::with('profile')
+            ->whereHas('profile', function ($q) {
+                $q->where('membership_status', 'pending');
+            })
+            ->latest()
+            ->paginate(10);
+
+        return view('admin.users.pending', compact('users'));
+    }
+
+    /** تایید عضویت **/
+    public function approveMembership($profileId)
+    {
+        $profile = Profile::findOrFail($profileId);
+        $profile->membership_status = 'approved';
+        $profile->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    /** رد عضویت **/
+    public function rejectMembership($profileId)
+    {
+        $profile = Profile::findOrFail($profileId);
+        $profile->membership_status = 'rejected';
+        $profile->save();
+
+        return response()->json(['success' => true]);
+    }
 }

@@ -388,7 +388,7 @@ class AuthController extends Controller
             'courses' => ['required', 'array', 'min:1'],
             'courses.*.course' => ['required', 'integer', 'exists:federation_courses,id'],
             'courses.*.date' => ['required', 'string'],
-            'courses.*.certificate' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:2048'],
+            'courses.*.certificate' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'],
         ], [
             'courses.required' => 'حداقل یک دوره باید ثبت شود.',
             'courses.*.course.required' => 'انتخاب نام دوره الزامی است.',
