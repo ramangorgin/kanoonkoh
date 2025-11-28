@@ -21,7 +21,6 @@ use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminPaymentController;
 
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\SurveyController;
 use App\Http\Controllers\UserController;
 
@@ -40,7 +39,17 @@ Route::post('/auth/phone', [AuthController::class, 'requestOtp'])->name('auth.re
 Route::get('/auth/verify', [AuthController::class, 'showVerifyForm'])->name('auth.verifyForm');
 Route::post('/auth/verify', [AuthController::class, 'verifyOtp'])->name('auth.verifyOtp');
 
-Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+Route::get('/auth/login', [AuthController::class, 'showLoginForm'])->name('auth.login');
+Route::post('/auth/login/request-otp', [AuthController::class, 'loginRequestOtp'])->name('auth.login.requestOtp');
+Route::get('/auth/login/verify', [AuthController::class, 'showLoginVerifyForm'])->name('auth.login.verifyForm');
+Route::post('/auth/login/verify', [AuthController::class, 'loginVerifyOtp'])->name('auth.login.verifyOtp');
+
+Route::get('/auth/register', [AuthController::class, 'showRegisterForm'])->name('auth.register');
+Route::post('/auth/register/request-otp', [AuthController::class, 'registerRequestOtp'])->name('auth.register.requestOtp');
+Route::get('/auth/register/verify', [AuthController::class, 'showRegisterVerifyForm'])->name('auth.register.verifyForm');
+Route::post('/auth/register/verify', [AuthController::class, 'registerVerifyOtp'])->name('auth.register.verifyOtp');
 // ==========================
 
 // Sign-Up Wizard
@@ -132,5 +141,27 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::get('/payments/{id}', [AdminPaymentController::class, 'show'])->name('admin.payments.show');
     Route::post('/payments/{id}/approve', [AdminPaymentController::class, 'approve'])->name('admin.payments.approve');
     Route::post('/payments/{id}/reject', [AdminPaymentController::class, 'reject'])->name('admin.payments.reject');
+});
+
+Route::get('/auth/login', [AuthController::class, 'showLoginForm'])->name('auth.login');
+Route::post('/auth/login/request-otp', [AuthController::class, 'loginRequestOtp'])->name('auth.login.requestOtp');
+Route::get('/auth/login/verify', [AuthController::class, 'showLoginVerifyForm'])->name('auth.login.verifyForm');
+Route::post('/auth/login/verify', [AuthController::class, 'loginVerifyOtp'])->name('auth.login.verifyOtp');
+
+Route::get('/auth/register', [AuthController::class, 'showRegisterForm'])->name('auth.register');
+Route::post('/auth/register/request-otp', [AuthController::class, 'registerRequestOtp'])->name('auth.register.requestOtp');
+Route::get('/auth/register/verify', [AuthController::class, 'showRegisterVerifyForm'])->name('auth.register.verifyForm');
+Route::post('/auth/register/verify', [AuthController::class, 'registerVerifyOtp'])->name('auth.register.verifyOtp');
+
+
+// Dashboard routes (after login)
+Route::middleware('auth')->group(function() {
+    Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard.index');
+    Route::get('/dashboard/profile/show', [ProfileController::class, 'show'])->name('dashboard.profile.show');
+    Route::get('/dashboard/profile', [ProfileController::class, 'edit'])->name('dashboard.profile.edit');
+    Route::post('/dashboard/profile', [ProfileController::class, 'update'])->name('dashboard.profile.update');
+    Route::get('/dashboard/medical', [MedicalRecordController::class, 'edit'])->name('dashboard.medical.edit');
+    Route::post('/dashboard/medical', [MedicalRecordController::class, 'update'])->name('dashboard.medical.update');
+    Route::get('/dashboard/education', [EducationalHistoryController::class, 'index'])->name('dashboard.educationalHistory.index');
 });
 

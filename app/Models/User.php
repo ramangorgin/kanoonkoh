@@ -9,9 +9,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
-
+    
     protected $fillable = [
-        'phone', 'otp_code', 'otp_expires_at', 'role'
+        'name',
+        'email',
+        'password',
+        'phone', // allow phone mass assignment
     ];
 
     public function Admin()
@@ -71,6 +74,21 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Course::class, 'course_registrations')
                     ->withPivot('approved', 'guest_name', 'guest_phone');
+    }
+
+    public function hasProfile()
+    {
+        return $this->profile()->exists();
+    }
+
+    public function hasMedicalRecord()
+    {
+        return $this->medicalRecord()->exists();
+    }
+
+    public function hasEducationalHistory()
+    {
+        return $this->educationalHistories()->exists();
     }
 
 }

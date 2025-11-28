@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Morilog\Jalali\Jalalian;
 
+
+
 class ProfileController extends Controller
 {
     public function show()
@@ -159,4 +161,21 @@ class ProfileController extends Controller
         $english = ['0','1','2','3','4','5','6','7','8','9'];
         return str_replace($persian, $english, $string);
     }
+
+    public function updateMedicalRecord(Request $request, $id)
+    {
+        $user = auth()->user();
+        if (!$user->hasMedicalRecord()) {
+            return redirect()->route('dashboard.medicalRecord.edit');
+        }
+        return redirect()->route('dashboard.index')->with('success', 'اطلاعات ذخیره شد');
+    }
+     // Show edit form for authenticated user
+    public function edit()
+    {
+        $user = Auth::user();
+        $profile = $user->profile ?? new Profile();
+        return view('user.myProfile', compact('user', 'profile'));
+    }
+
 }

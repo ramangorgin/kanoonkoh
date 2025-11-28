@@ -11,15 +11,15 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-        <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
-        <link href="https://cdn.jsdelivr.net/gh/rastikerdar/sahel-font@v3.4.0/dist/font-face.css" rel="stylesheet" type="text/css" />
+        <link href="{{ asset('css/fonts.css') }}" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <link rel="stylesheet" href="{{ asset('vendor/jalali-datepicker/dist/jalalidatepicker.min.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
         @arcaptchaScript
         @stack('styles')
 
         <style>
-            body{ font-family: 'Vazirmatn', sans-serif; }
             .ltr-footer{ direction:ltr !important; text-align:left !important; }
             .ltr-footer li{
                 display:flex; align-items:center; justify-content:flex-start; gap:.5rem;
@@ -90,11 +90,10 @@
         </header>
 
         <main>
-            @include('alerts')
             @yield('content')
         </main>
 
-        <footer class="bg-dark text-light pt-5 mt-5 border-top font-vazirmatn">
+        <footer class="bg-dark text-light pt-5 mt-0 border-top">
         <div class="container">
             <div class="row gy-4">
 
@@ -194,6 +193,8 @@
             L.marker([35.8232941, 50.9331318]).addTo(map);
         </script>
 
+        <script src="{{ asset('vendor/jalali-datepicker/dist/jalalidatepicker.min.js') }}"></script>
+        <script src="{{ asset('js/jalali-datepicker-init.js') }}"></script>
 
         @stack('scripts')
     </body>

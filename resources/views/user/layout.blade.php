@@ -3,45 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <title>@yield('title', 'داشبورد')</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <!-- Faveico meta tags -->
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="manifest" href="/site.webmanifest">
-    <link rel="stylesheet" href="{{ asset('css/bootstrap.rtl.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/bootstrap-icons.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/persian-datepicker.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/select2.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/leaflet.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/Vazirmatn-font-face.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('css/Sahel-font-face.css') }}" type="text/css">
+
+    <!-- Fonts -->
+    <link href="{{ asset('css/fonts.css') }}" rel="stylesheet">
+
+    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
-    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/sahel-font@v3.4.0/dist/font-face.css" rel="stylesheet" type="text/css" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
 
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+    <!-- JalaliDatePicker -->
+    <link rel="stylesheet" href="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     @stack('styles')
     <style>
 
-        h1, h2 , h3 , h4, h5{
-            font-family: 'Vazirmatn', sans-serif;
-        }
-        p , a , button{
-            font-family: 'Vazirmatn', sans-serif;
-        }
-
         body {
             margin: 0;
-            font-family: 'Sahel', sans-serif;
             direction: rtl;
             background-color: #f9f9f9;
         }
@@ -109,7 +101,6 @@
             color: #ffffff;
             padding: 20px;
             justify-content: center;
-            font-family: 'Vazirmatn', sans-serif;
             font-weight: 900;
         }
 
@@ -179,7 +170,7 @@
 </head>
 <body>
 <header>
-    <nav class="navbar bg-white shadow-sm py-3 px-4" style="font-family: 'Vazirmatn', sans-serif;">
+    <nav class="navbar bg-white shadow-sm py-3 px-4">
         <div class="container-fluid d-flex align-items-center justify-content-between flex-wrap">
 
             <!-- لوگو (همیشه سمت راست) -->
@@ -205,7 +196,7 @@
         <a href="{{ route('dashboard.index') }}" class="{{ request()->routeIs('dashboard.index') ? 'active-link' : '' }}">
             <i class="bi bi-house-door-fill me-2"></i> خانه داشبورد
         </a>
-        <a href="{{ route('dashboard.profile') }}" class="{{ request()->routeIs('dashboard.profile') ? 'active-link' : '' }}">
+        <a href="{{ route('dashboard.profile.show') }}" class="{{ request()->routeIs('dashboard.profile.show') ? 'active-link' : '' }}">
             <i class="bi bi-person-lines-fill me-2"></i> ویرایش مشخصات
         </a>
 
@@ -225,6 +216,16 @@
         <a href="{{ route('dashboard.settings') }}" class="{{ request()->routeIs('dashboard.settings') ? 'active-link' : '' }}">
             <i class="bi bi-gear-fill me-2"></i> تنظیمات
         </a>
+        @auth
+            <form method="POST" action="{{ route('logout') }}" style="margin:0;">
+                @csrf
+                <button type="submit"
+                    style="display:block; width:100%; text-align:right; padding:10px 15px; margin-bottom:10px; border-radius:5px; color:#212529; background-color:#f8f9fa; border:0; font-family: inherit;"
+                    class="{{ request()->routeIs('logout') ? 'active-link' : '' }}">
+                    <i class="bi bi-box-arrow-right me-2"></i> خروج
+                </button>
+            </form>
+        @endauth
     </aside>
 
     <div class="main-content">
@@ -253,13 +254,12 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/persian-date@1.0.6/dist/persian-date.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script src="{{ asset('js/jalali-datepicker-init.js') }}"></script>
+<script type="text/javascript" src="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.js"></script>
 
 
 <script>AOS.init();</script>

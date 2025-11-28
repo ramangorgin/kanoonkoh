@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <title>@yield('title', 'پنل مدیریت')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{-- Jalali Datepicker & App CSS --}}
+    <link rel="stylesheet" href="{{ asset('vendor/jalali-datepicker/dist/jalalidatepicker.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 
     {{-- Bootstrap & Icons --}}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
@@ -16,12 +19,9 @@
     {{-- DataTables (برای جستجو و خروجی Excel) --}}
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 
-    {{-- فونت فارسی --}}
-    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css"/>
-
+    <link href="{{ asset('css/fonts.css') }}" rel="stylesheet">
     <style>
         body {
-            font-family: 'Vazirmatn', sans-serif;
             background-color: #f5f7fa;
         }
 
@@ -163,7 +163,8 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-
+    <script src="{{ asset('vendor/jalali-datepicker/dist/jalalidatepicker.min.js') }}"></script>
+    <script src="{{ asset('js/jalali-datepicker-init.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const sidebar = document.querySelector('.sidebar');

@@ -67,7 +67,7 @@ class EducationalHistoryController extends Controller
             'issue_date'          => $issueDate,
         ]);
 
-        return redirect()->back()->with('success', 'سابقه آموزشی جدید با موفقیت ثبت شد.');
+        return redirect()->route('dashboard.index')->with('success', 'اطلاعات ذخیره شد');
     }
 
     /**
