@@ -43,13 +43,21 @@ class Profile extends Model
 
     public function setBirthDateAttribute($value)
     {
-        try {
-            // اگر مقدار خالی یا نال بود، هیچی تنظیم نکن
-            if (empty($value)) {
-                $this->attributes['birth_date'] = null;
-                return;
-            }
+        // اگر مقدار خالی یا نال بود، هیچی تنظیم نکن
+        if (empty($value)) {
+            $this->attributes['birth_date'] = null;
+            return;
+        }
 
+        // اگر مقدار از قبل به فرمت میلادی (Y-m-d) است، مستقیم ذخیره کن
+        // کنترلر تبدیل شمسی به میلادی را انجام می‌دهد
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            $this->attributes['birth_date'] = $value;
+            return;
+        }
+
+        // اگر به فرمت شمسی (Y/m/d) است، تبدیل کن
+        try {
             // فقط اعداد فارسی → انگلیسی
             $value = str_replace(['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'], ['0','1','2','3','4','5','6','7','8','9'], $value);
 

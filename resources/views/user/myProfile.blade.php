@@ -6,6 +6,45 @@
     <a href="{{ route('dashboard.index') }}">داشبورد</a> / <span>ویرایش مشخصات کاربری</span>
 @endsection
 
+@push('styles')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<link rel="stylesheet" href="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css">
+<style>
+    .jalali-datepicker { z-index: 2000 !important; }
+    .jalali-datepicker .jalali-datepicker-legend { z-index: 2001 !important; }
+    .jalali-datepicker-portal { z-index: 2000 !important; }
+    
+    /* File input styling */
+    .file-input-wrapper {
+        position: relative;
+    }
+    .file-input-wrapper input[type="file"] {
+        font-family: 'Peyda', sans-serif !important;
+    }
+    .file-input-wrapper .file-name {
+        font-family: 'Peyda', sans-serif !important;
+        font-size: 0.875rem;
+        color: #198754;
+        margin-top: 0.25rem;
+    }
+    .file-input-wrapper .file-error {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    /* Button font fix */
+    .btn {
+        font-family: 'Peyda', sans-serif !important;
+    }
+    
+    /* Form elements font */
+    .form-control, .form-select, .form-label {
+        font-family: 'Peyda', sans-serif !important;
+    }
+</style>
+@endpush
+
 @section('content')
 
 @php
@@ -126,7 +165,11 @@ if (! function_exists('toPersianDate')) {
                 <!-- عکس پرسنلی -->
                 <div class="col-md-6">
                     <label class="form-label"><i class="bi bi-image"></i> عکس پرسنلی <span class="text-danger">*</span></label>
-                    <input type="file" class="filepond" name="photo" accept="image/*">
+                    <div class="file-input-wrapper">
+                        <input type="file" class="form-control file-upload-input" name="photo" accept=".jpg,.jpeg,.png" data-max-size="2">
+                        <div class="file-name"></div>
+                        <div class="file-error"></div>
+                    </div>
                     <small class="form-text text-muted">عکس واضح، فرمت JPG یا PNG. حداکثر 2 مگابایت</small>
 
                     @if(!empty($profile->photo))
@@ -142,8 +185,12 @@ if (! function_exists('toPersianDate')) {
                 <!-- کارت ملی -->
                 <div class="col-md-6">
                     <label class="form-label"><i class="bi bi-credit-card"></i> اسکن کارت ملی <span class="text-danger">*</span></label>
-                    <input type="file" class="filepond" name="national_card" accept="image/*,application/pdf">
-                    <small class="form-text text-muted">اسکن خوانا از کارت ملی (اختیاری)</small>
+                    <div class="file-input-wrapper">
+                        <input type="file" class="form-control file-upload-input" name="national_card" accept=".jpg,.jpeg,.png,.pdf" data-max-size="4">
+                        <div class="file-name"></div>
+                        <div class="file-error"></div>
+                    </div>
+                    <small class="form-text text-muted">اسکن خوانا از کارت ملی (حداکثر ۴ مگابایت)</small>
                     @if(!empty($profile->national_card))
                         <div class="mt-3 text-center">
                             <img src="{{ asset('storage/' . $profile->national_card) }}"
@@ -223,48 +270,103 @@ if (! function_exists('toPersianDate')) {
 
 @endsection
 
-@push('styles')
-<style>
-  .jalali-datepicker { z-index: 2000 !important; }
-  .jalali-datepicker .jalali-datepicker-legend { z-index: 2001 !important; }
-  .jalali-datepicker-portal { z-index: 2000 !important; }
-</style>
-@endpush
-
 @push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 <script>
-    jalaliDatepicker.startWatch({persianDigits:true});
-    document.addEventListener('DOMContentLoaded', function () {
-        // Toastr (snackbar) include and setup
-        (function(){
-            if (!document.querySelector('link[href*="toastr.min.css"]')) {
-                const l = document.createElement('link');
-                l.rel = 'stylesheet';
-                l.href = 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css';
-                document.head.appendChild(l);
+(function() {
+    'use strict';
+    
+    // Configure Toastr
+    toastr.options = {
+        closeButton: true,
+        progressBar: true,
+        positionClass: 'toast-bottom-center',
+        timeOut: 6000,
+        rtl: true,
+    };
+
+    // Show session messages
+    @if(session('success'))
+        toastr.success(@json(session('success')));
+    @endif
+    @if ($errors->any())
+        @foreach ($errors->all() as $error)
+            toastr.error(@json($error));
+        @endforeach
+    @endif
+
+    // File input validation and display
+    function setupFileInput(input) {
+        if (input._fileSetup) return;
+        input._fileSetup = true;
+        
+        const wrapper = input.closest('.file-input-wrapper');
+        const fileNameDiv = wrapper ? wrapper.querySelector('.file-name') : null;
+        const fileErrorDiv = wrapper ? wrapper.querySelector('.file-error') : null;
+        const maxSizeMB = parseFloat(input.dataset.maxSize) || 2;
+        const maxSizeBytes = maxSizeMB * 1024 * 1024;
+        
+        input.addEventListener('change', function() {
+            // Clear previous messages
+            if (fileNameDiv) fileNameDiv.textContent = '';
+            if (fileErrorDiv) fileErrorDiv.textContent = '';
+            
+            if (this.files && this.files.length > 0) {
+                const file = this.files[0];
+                
+                // Check file size
+                if (file.size > maxSizeBytes) {
+                    if (fileErrorDiv) {
+                        fileErrorDiv.textContent = `حجم فایل (${(file.size / 1024 / 1024).toFixed(2)} مگابایت) بیشتر از حد مجاز (${maxSizeMB} مگابایت) است.`;
+                    }
+                    toastr.error(`حجم فایل "${file.name}" بیشتر از ${maxSizeMB} مگابایت است. لطفاً فایل کوچکتری انتخاب کنید.`);
+                    this.value = ''; // Clear the input
+                    return;
+                }
+                
+                // Check file type based on accept attribute
+                const acceptAttr = input.getAttribute('accept') || '';
+                const allowedExtensions = acceptAttr.split(',').map(ext => ext.trim().toLowerCase());
+                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                
+                let isValidType = false;
+                for (const allowed of allowedExtensions) {
+                    if (allowed === fileExtension || 
+                        (allowed === 'image/*' && file.type.startsWith('image/')) ||
+                        (allowed === 'application/pdf' && file.type === 'application/pdf')) {
+                        isValidType = true;
+                        break;
+                    }
+                }
+                
+                if (!isValidType && allowedExtensions.length > 0) {
+                    if (fileErrorDiv) {
+                        fileErrorDiv.textContent = 'نوع فایل مجاز نیست. فرمت‌های قابل قبول: ' + allowedExtensions.join(', ');
+                    }
+                    toastr.error('نوع فایل مجاز نیست.');
+                    this.value = '';
+                    return;
+                }
+                
+                // Show file name
+                if (fileNameDiv) {
+                    fileNameDiv.textContent = `فایل انتخاب شده: ${file.name} (${(file.size / 1024).toFixed(1)} کیلوبایت)`;
+                }
             }
-            const s = document.createElement('script');
-            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js';
-            s.onload = function(){
-                toastr.options = {
-                    closeButton: true,
-                    progressBar: true,
-                    positionClass: 'toast-bottom-center',
-                    timeOut: 6000,
-                    rtl: true,
-                };
-                // server messages
-                @if(session('success'))
-                    toastr.success(@json(session('success')));
-                @endif
-                @if ($errors->any())
-                    @foreach ($errors->all() as $error)
-                        toastr.error(@json($error));
-                    @endforeach
-                @endif
-            };
-            document.body.appendChild(s);
-        })();
+        });
+    }
+
+    // DOM Ready
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize Jalali datepicker
+        if (window.jalaliDatepicker && jalaliDatepicker.startWatch) {
+            jalaliDatepicker.startWatch({ persianDigits: true });
+        }
+
+        // Setup all file inputs
+        document.querySelectorAll('.file-upload-input').forEach(setupFileInput);
+
         @if(session('onboarding'))
         const modalEl = document.getElementById('onboardingProfileModal');
         if (modalEl) {
@@ -276,12 +378,14 @@ if (! function_exists('toPersianDate')) {
         // Basic client-side validation
         const form = document.getElementById('profile-form');
         const errorBox = document.getElementById('client-errors-profile');
+        
         function showErrors(errors){
             if (!errors.length) { errorBox.classList.add('d-none'); errorBox.innerHTML=''; return; }
             errorBox.classList.remove('d-none');
             errorBox.innerHTML = '<ul class="mb-0">' + errors.map(e=>'<li>'+e+'</li>').join('') + '</ul>';
             window.scrollTo({ top: form.getBoundingClientRect().top + window.scrollY - 120, behavior: 'smooth' });
         }
+        
         form?.addEventListener('submit', function(e){
             const errs = [];
             const get = name => form.querySelector('[name="'+name+'"]');
@@ -295,40 +399,25 @@ if (! function_exists('toPersianDate')) {
             if (!/^\d{10}$/.test(nid)) errs.push('کد ملی باید ۱۰ رقم عددی باشد.');
             if (!/^\d{4}\/\d{2}\/\d{2}$/.test(bdate)) errs.push('تاریخ تولد را به فرمت YYYY/MM/DD وارد کنید.');
 
+            // Check file sizes
+            form.querySelectorAll('.file-upload-input').forEach(input => {
+                if (input.files && input.files.length > 0) {
+                    const file = input.files[0];
+                    const maxSizeMB = parseFloat(input.dataset.maxSize) || 2;
+                    if (file.size > maxSizeMB * 1024 * 1024) {
+                        errs.push(`حجم فایل ${input.name} بیشتر از ${maxSizeMB} مگابایت است.`);
+                    }
+                }
+            });
+
             if (errs.length){
                 e.preventDefault();
-                if (window.toastr) errs.forEach(m => toastr.error(m));
-                else showErrors(errs);
+                errs.forEach(m => toastr.error(m));
+                showErrors(errs);
             }
         });
-
-        // Repopulate old data on reload (if any)
-        // This is already handled by Blade's 'old()' helper for simple inputs.
-        // But for better UX, we ensure FilePond inputs show previously uploaded files if they exist in DB/Session
-        // (This part is actually handled by the server rendering the page with 'old' values or DB values)
-        // However, to restore *just typed* data after a failed client-side check refresh? 
-        // Client-side checks prevent refresh. Server-side checks cause refresh with old() data.
-        // So the "old()" helper in Blade covers 99% of this.
-        // Ensure all inputs have value="{{ old('name', $profile->name) }}"
-
-
-        // FilePond (nice file upload)
-        (function(){
-            const css = document.createElement('link');
-            css.rel = 'stylesheet';
-            css.href = 'https://unpkg.com/filepond@^4/dist/filepond.min.css';
-            document.head.appendChild(css);
-            const script = document.createElement('script');
-            script.src = 'https://unpkg.com/filepond@^4/dist/filepond.min.js';
-            script.onload = function(){
-                FilePond.setOptions({
-                    labelIdle: 'فایل خود را اینجا رها کنید یا <span class="filepond--label-action">برای آپلود کلیک کنید</span>',
-                });
-                document.querySelectorAll('.filepond').forEach(el => FilePond.create(el, { credits:false }));
-            };
-            document.body.appendChild(script);
-        })();
     });
+})();
 </script>
 @endpush
 

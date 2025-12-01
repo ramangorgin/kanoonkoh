@@ -2,6 +2,46 @@
 
 @section('title', 'سوابق آموزشی من')
 
+@push('styles')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<link rel="stylesheet" href="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css">
+<style>
+    /* Ensure Jalali datepicker renders over Bootstrap modals */
+    .jalali-datepicker { z-index: 200000 !important; }
+    .jalali-datepicker .jalali-datepicker-legend { z-index: 200001 !important; }
+    .jalali-datepicker-portal { z-index: 200000 !important; position: fixed !important; }
+    
+    /* File input styling */
+    .file-input-wrapper {
+        position: relative;
+    }
+    .file-input-wrapper input[type="file"] {
+        font-family: 'Peyda', sans-serif !important;
+    }
+    .file-input-wrapper .file-name {
+        font-family: 'Peyda', sans-serif !important;
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+    .file-input-wrapper .file-error {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    /* Button font fix */
+    .btn {
+        font-family: 'Peyda', sans-serif !important;
+    }
+    
+    /* Form elements font */
+    .form-control, .form-select, .form-label {
+        font-family: 'Peyda', sans-serif !important;
+    }
+</style>
+@endpush
+
 @section('content')
 @php
 $user = $user ?? auth()->user();
@@ -69,8 +109,12 @@ $federationCourses = $federationCourses ?? collect();
                                                 </div>
                                             </div>
                                             <div class="col-12 mt-2 mb-3">
-                                                <label class="form-label">فایل مدرک (اختیاری)</label>
-                                                <input type="file" name="courses[{{ $idx }}][certificate_file]" class="filepond" accept="image/*,application/pdf">
+                                                <label class="form-label">فایل مدرک (اختیاری - حداکثر ۲ مگابایت)</label>
+                                                <div class="file-input-wrapper">
+                                                    <input type="file" name="courses[{{ $idx }}][certificate_file]" class="form-control certificate-file-input" accept=".jpg,.jpeg,.png,.pdf">
+                                                    <div class="file-name"></div>
+                                                    <div class="file-error"></div>
+                                                </div>
                                             </div>
                                             <div class="col-md-1 text-end">
                                                 <button type="button" class="btn btn-outline-danger remove-course" title="حذف"><i class="bi bi-x-lg"></i></button>
@@ -103,8 +147,12 @@ $federationCourses = $federationCourses ?? collect();
                                             </div>
                                         </div>
                                         <div class="col-12 mt-2 mb-3">
-                                            <label class="form-label">فایل مدرک (اختیاری)</label>
-                                            <input type="file" name="courses[0][certificate_file]" class="filepond" accept="image/*,application/pdf">
+                                            <label class="form-label">فایل مدرک (اختیاری - حداکثر ۲ مگابایت)</label>
+                                            <div class="file-input-wrapper">
+                                                <input type="file" name="courses[0][certificate_file]" class="form-control certificate-file-input" accept=".jpg,.jpeg,.png,.pdf">
+                                                <div class="file-name"></div>
+                                                <div class="file-error"></div>
+                                            </div>
                                         </div>
                                         <div class="col-md-1 text-end">
                                             <button type="button" class="btn btn-outline-danger remove-course" title="حذف"><i class="bi bi-x-lg"></i></button>
@@ -202,8 +250,12 @@ $federationCourses = $federationCourses ?? collect();
                                                         <small class="form-text text-muted">تاریخ به فرمت شمسی</small>
                                                     </div>
                                                         <div class="col-12 mt-2 mb-4">
-                                                        <label class="form-label">فایل مدرک (اختیاری)</label>
-                                                            <input type="file" name="certificate_file" class="filepond" accept="image/*,application/pdf">
+                                                        <label class="form-label">فایل مدرک (اختیاری - حداکثر ۲ مگابایت)</label>
+                                                            <div class="file-input-wrapper">
+                                                                <input type="file" name="certificate_file" class="form-control certificate-file-input" accept=".jpg,.jpeg,.png,.pdf">
+                                                                <div class="file-name"></div>
+                                                                <div class="file-error"></div>
+                                                            </div>
                                                         @if($history->certificate_file)
                                                             <div class="mt-1"><small class="text-muted">فایل فعلی: {{ basename($history->certificate_file) }}</small></div>
                                                         @endif
@@ -242,51 +294,151 @@ $federationCourses = $federationCourses ?? collect();
         راهنما: بهتر است حداقل یک سابقه وارد کنید تا ثبت‌نام کامل شود. اما می‌توانید بعداً نیز اضافه کنید.
     </div>
 </div>
-
-@push('styles')
-<style>
-  /* Ensure Jalali datepicker renders over Bootstrap modals */
-  .jalali-datepicker { z-index: 200000 !important; }
-  .jalali-datepicker .jalali-datepicker-legend { z-index: 200001 !important; }
-  .jalali-datepicker-portal { z-index: 200000 !important; position: fixed !important; }
-</style>
-@endpush
+@endsection
 
 @push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // Toastr (snackbar) include and setup
-        (function(){
-            if (!document.querySelector('link[href*="toastr.min.css"]')) {
-                const l = document.createElement('link');
-                l.rel = 'stylesheet';
-                l.href = 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css';
-                document.head.appendChild(l);
+(function() {
+    'use strict';
+    
+    // Max file size in bytes (2MB)
+    const MAX_FILE_SIZE = 2 * 1024 * 1024;
+    const MAX_FILE_SIZE_MB = 2;
+    
+    // Configure Toastr
+    toastr.options = {
+        closeButton: true,
+        progressBar: true,
+        positionClass: 'toast-bottom-center',
+        timeOut: 6000,
+        rtl: true,
+    };
+
+    // Show session messages
+    @if(session('success'))
+        toastr.success(@json(session('success')));
+    @endif
+    @if ($errors ?? false)
+        @foreach (($errors->all() ?? []) as $error)
+            toastr.error(@json($error));
+        @endforeach
+    @endif
+
+    // File input validation and display
+    function setupFileInput(input) {
+        if (input._fileSetup) return;
+        input._fileSetup = true;
+        
+        const wrapper = input.closest('.file-input-wrapper');
+        const fileNameDiv = wrapper ? wrapper.querySelector('.file-name') : null;
+        const fileErrorDiv = wrapper ? wrapper.querySelector('.file-error') : null;
+        
+        input.addEventListener('change', function() {
+            // Clear previous messages
+            if (fileNameDiv) fileNameDiv.textContent = '';
+            if (fileErrorDiv) fileErrorDiv.textContent = '';
+            
+            if (this.files && this.files.length > 0) {
+                const file = this.files[0];
+                
+                // Check file size
+                if (file.size > MAX_FILE_SIZE) {
+                    if (fileErrorDiv) {
+                        fileErrorDiv.textContent = `حجم فایل (${(file.size / 1024 / 1024).toFixed(2)} مگابایت) بیشتر از حد مجاز (${MAX_FILE_SIZE_MB} مگابایت) است.`;
+                    }
+                    toastr.error(`حجم فایل "${file.name}" بیشتر از ${MAX_FILE_SIZE_MB} مگابایت است. لطفاً فایل کوچکتری انتخاب کنید.`);
+                    this.value = ''; // Clear the input
+                    return;
+                }
+                
+                // Check file type
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+                const allowedExtensions = ['.jpg', '.jpeg', '.png', '.pdf'];
+                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                
+                if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
+                    if (fileErrorDiv) {
+                        fileErrorDiv.textContent = 'فقط فایل‌های JPG، PNG و PDF مجاز هستند.';
+                    }
+                    toastr.error('نوع فایل مجاز نیست. فقط JPG، PNG و PDF قابل قبول است.');
+                    this.value = '';
+                    return;
+                }
+                
+                // Show file name
+                if (fileNameDiv) {
+                    fileNameDiv.textContent = `فایل انتخاب شده: ${file.name} (${(file.size / 1024).toFixed(1)} کیلوبایت)`;
+                }
             }
-            const s = document.createElement('script');
-            s.src = 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js';
-            s.onload = function(){
-                toastr.options = {
-                    closeButton: true,
-                    progressBar: true,
-                    positionClass: 'toast-bottom-center',
-                    timeOut: 6000,
-                    rtl: true,
-                };
-                @if(session('success'))
-                    toastr.success(@json(session('success')));
-                @endif
-                @if ($errors ?? false)
-                    @foreach (($errors->all() ?? []) as $error)
-                        toastr.error(@json($error));
-                    @endforeach
-                @endif
+        });
+    }
+
+    // --- Unified helper for course logic ---
+    function setupRowLogic(row) {
+        if (!row || row.dataset.logicInitialized) return;
+        row.dataset.logicInitialized = "true";
+
+        // 1. Custom course toggle
+        const sel = row.querySelector('.select-course');
+        const wrap = row.querySelector('.custom-course-wrap');
+        if (sel && wrap) {
+            const sync = () => {
+                const isCustom = sel.value === '_custom';
+                wrap.style.display = isCustom ? '' : 'none';
             };
-            document.body.appendChild(s);
-        })();
+            sel.addEventListener('change', sync);
+            sync();
+        }
+        
+        // 2. Lock used courses
+        const syncLocks = () => {
+            const allSelects = document.querySelectorAll('.select-course');
+            const used = new Set();
+            allSelects.forEach(s => { if (s.value && s.value !== '_custom') used.add(s.value); });
+            allSelects.forEach(s => {
+                const current = s.value;
+                s.querySelectorAll('option').forEach(opt => {
+                    if (!opt.value || opt.value === '_custom') return;
+                    opt.disabled = used.has(opt.value) && opt.value !== current;
+                });
+            });
+        };
+        if (sel) {
+            sel.addEventListener('change', syncLocks);
+            syncLocks();
+        }
+        
+        // 3. Setup file inputs in this row
+        row.querySelectorAll('.certificate-file-input').forEach(setupFileInput);
+    }
+
+    // DOM Ready
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize Jalali datepicker
         if (window.jalaliDatepicker && jalaliDatepicker.startWatch) {
             jalaliDatepicker.startWatch({ persianDigits: true });
         }
+
+        // Setup existing rows
+        document.querySelectorAll('.course-item, .card-body').forEach(setupRowLogic);
+        
+        // Setup all file inputs
+        document.querySelectorAll('.certificate-file-input').forEach(setupFileInput);
+
+        // Handle collapse show events
+        document.addEventListener('shown.bs.collapse', function(e) {
+            const root = e.target;
+            if (window.jalaliDatepicker && jalaliDatepicker.startWatch) {
+                jalaliDatepicker.startWatch({ persianDigits: true });
+            }
+            root.querySelectorAll('.select-course').forEach(s => {
+                const container = s.closest('.row, .card-body');
+                if (container) setupRowLogic(container);
+            });
+            root.querySelectorAll('.certificate-file-input').forEach(setupFileInput);
+        });
 
         @if(session('onboarding'))
         const modalEl = document.getElementById('onboardingEduModal');
@@ -295,120 +447,14 @@ $federationCourses = $federationCourses ?? collect();
             modal.show();
         }
         @endif
-        
-        // --- Unified helper for course logic ---
-        function setupRowLogic(row) {
-            if (row.dataset.logicInitialized) return;
-            row.dataset.logicInitialized = "true";
-
-            // 1. Custom course toggle
-            const sel = row.querySelector('.select-course');
-            const wrap = row.querySelector('.custom-course-wrap');
-            if (sel && wrap) {
-                const sync = () => {
-                    const isCustom = sel.value === '_custom';
-                    wrap.style.display = isCustom ? '' : 'none';
-                };
-                sel.addEventListener('change', sync);
-                sync();
-            }
-            // 2. Lock used courses
-            const syncLocks = () => {
-                const allSelects = document.querySelectorAll('.select-course');
-                const used = new Set();
-                allSelects.forEach(s => { if (s.value && s.value !== '_custom') used.add(s.value); });
-                allSelects.forEach(s => {
-                    const current = s.value;
-                    s.querySelectorAll('option').forEach(opt => {
-                        if (!opt.value || opt.value === '_custom') return;
-                        opt.disabled = used.has(opt.value) && opt.value !== current;
-                    });
-                });
-            };
-            if (sel) {
-                sel.addEventListener('change', syncLocks);
-                syncLocks(); // Initial sync
-            }
-        }
-
-        // Setup existing rows
-        document.querySelectorAll('.course-item, .modal-body, .card-body').forEach(setupRowLogic);
-
-        document.addEventListener('shown.bs.collapse', function(e) {
-            const root = e.target;
-            if (window.jalaliDatepicker && jalaliDatepicker.startWatch) {
-                jalaliDatepicker.startWatch({ persianDigits: true });
-            }
-            root.querySelectorAll('.select-course').forEach(s => setupRowLogic(s.closest('.row, .card-body')));
-            // Lazy load FilePond when section is shown
-            initFilePond(root);
-        });
-
-        // --- FilePond Loader ---
-        let pondFactory = null;
-        function initFilePond(root) {
-            if (!pondFactory) return; // Wait for script load
-            root.querySelectorAll('.filepond').forEach(el => {
-                if (el._pond) return; 
-                pondFactory(el, {
-                    credits: false,
-                    allowMultiple: false,
-                    storeAsFile: true,
-                    allowProcess: false,
-                    instantUpload: false,
-                    labelIdle: 'فایل خود را اینجا رها کنید یا <span class="filepond--label-action">برای آپلود کلیک کنید</span>',
-                    labelInvalidField: 'برخی فیلدها نامعتبر هستند.',
-                    labelFileWaitingForSize: 'در حال محاسبه اندازه...',
-                    labelFileSizeNotAvailable: 'اندازه نامشخص',
-                    labelFileLoading: 'در حال بارگذاری...',
-                    labelFileLoadError: 'خطا در بارگذاری فایل.',
-                    labelFileProcessing: 'در حال پردازش...',
-                    labelFileProcessingComplete: 'بارگذاری کامل شد.',
-                    labelFileProcessingAborted: 'بارگذاری لغو شد.',
-                    labelFileProcessingError: 'خطا در پردازش فایل. در صورت تداوم با پشتیبانی تماس بگیرید.',
-                    labelFileProcessingRevertError: 'خطا در بازگردانی.',
-                    labelTapToCancel: 'برای لغو لمس کنید',
-                    labelTapToRetry: 'برای تلاش دوباره لمس کنید',
-                    labelTapToUndo: 'برای بازگردانی لمس کنید',
-                    labelButtonRemoveItem: 'حذف',
-                    labelButtonAbortItemLoad: 'لغو',
-                    labelButtonRetryItemLoad: 'تلاش دوباره',
-                    labelButtonAbortItemProcessing: 'لغو',
-                    labelButtonUndoItemProcessing: 'بازگردانی',
-                    labelButtonRetryItemProcessing: 'تلاش دوباره',
-                    labelButtonProcessItem: 'آپلود',
-                    labelMaxFileSizeExceeded: 'حجم فایل بیش از حد مجاز است.',
-                    labelMaxFileSize: 'حداکثر حجم مجاز: {filesize}.',
-                    labelFileTypeNotAllowed: 'نوع فایل مجاز نیست.',
-                    fileValidateTypeLabelExpectedTypes: 'انواع مجاز: {allTypes}',
-                });
-            });
-        }
-
-        (function(){
-            if (!document.querySelector('link[href*="filepond.min.css"]')) {
-                const css = document.createElement('link');
-                css.rel = 'stylesheet';
-                css.href = 'https://unpkg.com/filepond@^4/dist/filepond.min.css';
-                document.head.appendChild(css);
-            }
-            const script = document.createElement('script');
-            script.src = 'https://unpkg.com/filepond@^4/dist/filepond.min.js';
-            script.onload = function(){
-                pondFactory = FilePond.create;
-                initFilePond(document);
-            };
-            document.body.appendChild(script);
-        })();
 
         // --- Dynamic Add Row ---
         (function(){
             const list = document.getElementById('courses-list');
             const addBtn = document.getElementById('add-course-row');
             
-            // If there are existing rows (e.g. from validation error repopulation), start idx from count
-            let idx = list.querySelectorAll('.course-item').length; 
-            if (idx === 0) idx = 1; // default start
+            let idx = list ? list.querySelectorAll('.course-item').length : 1;
+            if (idx === 0) idx = 1;
 
             const template = (i) => `
                 <div class="course-item row g-3 align-items-end border rounded p-2 mb-3">
@@ -434,76 +480,103 @@ $federationCourses = $federationCourses ?? collect();
                         </div>
                     </div>
                     <div class="col-12 mt-2 mb-3">
-                        <label class="form-label">فایل مدرک (اختیاری)</label>
-                        <input type="file" name="courses[${i}][certificate_file]" class="filepond" accept="image/*,application/pdf">
+                        <label class="form-label">فایل مدرک (اختیاری - حداکثر ۲ مگابایت)</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" name="courses[${i}][certificate_file]" class="form-control certificate-file-input" accept=".jpg,.jpeg,.png,.pdf">
+                            <div class="file-name"></div>
+                            <div class="file-error"></div>
+                        </div>
                     </div>
                     <div class="col-md-1 text-end">
                         <button type="button" class="btn btn-outline-danger remove-course" title="حذف"><i class="bi bi-x-lg"></i></button>
                     </div>
                 </div>`;
 
-            addBtn?.addEventListener('click', function(){
-                // Use createElement + appendChild to avoid destroying existing DOM (and FilePond instances)
-                const div = document.createElement('div');
-                div.innerHTML = template(idx);
-                const newItem = div.firstElementChild;
-                list.appendChild(newItem);
-                idx++;
-                
-                if (window.jalaliDatepicker && jalaliDatepicker.startWatch) {
-                    jalaliDatepicker.startWatch({ persianDigits: true });
-                }
-                
-                setupRowLogic(newItem);
-                initFilePond(newItem);
-            });
-
-            list?.addEventListener('click', function(e){
-                if (e.target.closest('.remove-course')) {
-                    const item = e.target.closest('.course-item');
-                    if (item && list.children.length > 1) {
-                        item.remove();
-                        // re-sync locks
-                        const s = document.querySelector('.select-course'); 
-                        if(s) s.dispatchEvent(new Event('change'));
+            if (addBtn) {
+                addBtn.addEventListener('click', function(){
+                    const div = document.createElement('div');
+                    div.innerHTML = template(idx);
+                    const newItem = div.firstElementChild;
+                    list.appendChild(newItem);
+                    idx++;
+                    
+                    if (window.jalaliDatepicker && jalaliDatepicker.startWatch) {
+                        jalaliDatepicker.startWatch({ persianDigits: true });
                     }
-                }
-            });
+                    
+                    setupRowLogic(newItem);
+                });
+            }
+
+            if (list) {
+                list.addEventListener('click', function(e){
+                    if (e.target.closest('.remove-course')) {
+                        const item = e.target.closest('.course-item');
+                        if (item && list.children.length > 1) {
+                            item.remove();
+                            // re-sync locks
+                            const s = document.querySelector('.select-course'); 
+                            if(s) s.dispatchEvent(new Event('change'));
+                        }
+                    }
+                });
+            }
         })();
 
         // Basic client-side validation for multi add
         (function(){
             const form = document.getElementById('multi-course-form');
             const errorBox = document.getElementById('client-errors-edu');
+            
             function showErrors(errors){
-                if (!errors.length) { errorBox.classList.add('d-none'); errorBox.innerHTML=''; return; }
+                if (!errors.length) { 
+                    errorBox.classList.add('d-none'); 
+                    errorBox.innerHTML=''; 
+                    return; 
+                }
                 errorBox.classList.remove('d-none');
                 errorBox.innerHTML = '<ul class="mb-0">' + errors.map(e=>'<li>'+e+'</li>').join('') + '</ul>';
                 window.scrollTo({ top: form.getBoundingClientRect().top + window.scrollY - 120, behavior: 'smooth' });
             }
-            form?.addEventListener('submit', function(e){
-                const errs = [];
-                const items = form.querySelectorAll('.course-item');
-                items.forEach((item, i) => {
-                    const sel = item.querySelector('.select-course');
-                    const custom = item.querySelector('.custom-course-wrap input');
-                    const date = item.querySelector('input[name^="courses"][name$="[issue_date]"]')?.value?.trim() || '';
-                    const selVal = sel?.value || '';
-                    const customVal = custom?.value?.trim() || '';
-                    if ((selVal === '' || selVal === '_custom') && customVal.length < 3) {
-                        errs.push(`ردیف ${i+1}: نام دوره سفارشی را حداقل با ۳ کاراکتر وارد کنید یا یک دوره از فهرست انتخاب کنید.`);
-                    }
-                    if (date && !/^\d{4}\/\d{2}\/\d{2}$/.test(date)) {
-                        errs.push(`ردیف ${i+1}: فرمت تاریخ صحیح نیست (YYYY/MM/DD).`);
+            
+            if (form) {
+                form.addEventListener('submit', function(e){
+                    const errs = [];
+                    const items = form.querySelectorAll('.course-item');
+                    
+                    items.forEach((item, i) => {
+                        const sel = item.querySelector('.select-course');
+                        const custom = item.querySelector('.custom-course-wrap input');
+                        const date = item.querySelector('input[name^="courses"][name$="[issue_date]"]')?.value?.trim() || '';
+                        const selVal = sel?.value || '';
+                        const customVal = custom?.value?.trim() || '';
+                        
+                        if ((selVal === '' || selVal === '_custom') && customVal.length < 3) {
+                            errs.push(`ردیف ${i+1}: نام دوره سفارشی را حداقل با ۳ کاراکتر وارد کنید یا یک دوره از فهرست انتخاب کنید.`);
+                        }
+                        if (date && !/^\d{4}\/\d{2}\/\d{2}$/.test(date)) {
+                            errs.push(`ردیف ${i+1}: فرمت تاریخ صحیح نیست (YYYY/MM/DD).`);
+                        }
+                        
+                        // Check file size
+                        const fileInput = item.querySelector('.certificate-file-input');
+                        if (fileInput && fileInput.files && fileInput.files.length > 0) {
+                            const file = fileInput.files[0];
+                            if (file.size > MAX_FILE_SIZE) {
+                                errs.push(`ردیف ${i+1}: حجم فایل بیشتر از ${MAX_FILE_SIZE_MB} مگابایت است.`);
+                            }
+                        }
+                    });
+                    
+                    if (errs.length){ 
+                        e.preventDefault(); 
+                        errs.forEach(m => toastr.error(m));
+                        showErrors(errs);
                     }
                 });
-                if (errs.length){ 
-                    e.preventDefault(); 
-                    if (window.toastr) errs.forEach(m => toastr.error(m));
-                    else showErrors(errs);
-                }
-            });
+            }
         })();
     });
+})();
 </script>
 @endpush
