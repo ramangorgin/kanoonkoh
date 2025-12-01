@@ -35,39 +35,123 @@ class EducationalHistoryController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'federation_course_id' => 'required|exists:federation_courses,id',
-            'issue_date'           => 'nullable|string',
-            'certificate_file'     => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-        ]);
-
-        $user = Auth::user();
-
-        // تبدیل تاریخ شمسی به میلادی
-        $issueDate = null;
-        if ($request->filled('issue_date')) {
-            try {
-                $issueDate = Jalalian::fromFormat('Y/m/d', $this->convertToEnglish($request->issue_date))->toCarbon()->toDateString();
-            } catch (\Exception $e) {
-                return back()->withErrors(['issue_date' => 'تاریخ وارد شده معتبر نیست'])->withInput();
+        // Normalize _custom sentinel to null for validation
+        if ($request->has('courses')) {
+            $courses = $request->input('courses', []);
+            foreach ($courses as $idx => $c) {
+                if (($c['federation_course_id'] ?? null) === '_custom') {
+                    $courses[$idx]['federation_course_id'] = null;
+                }
+                if (isset($courses[$idx]['custom_course_title'])) {
+                    $courses[$idx]['custom_course_title'] = trim((string)$courses[$idx]['custom_course_title']);
+                }
+            }
+            $request->merge(['courses' => $courses]);
+        } else {
+            if ($request->input('federation_course_id') === '_custom') {
+                $request->merge(['federation_course_id' => null]);
+            }
+            if ($request->has('custom_course_title')) {
+                $request->merge(['custom_course_title' => trim((string)$request->input('custom_course_title'))]);
             }
         }
 
-        // آپلود فایل مدرک
-        $filePath = null;
-        if ($request->hasFile('certificate_file')) {
-            $filePath = $request->file('certificate_file')->store('educational_certificates', 'public');
+        // Support both single and multi-add with Persian messages
+        $messages = [
+            'courses.required' => 'حداقل یک ردیف دوره باید اضافه شود.',
+            'courses.*.federation_course_id.exists' => 'دوره انتخاب‌شده معتبر نیست.',
+            'courses.*.custom_course_title.required_without' => 'در صورت انتخاب نکردن دوره از لیست، نام دوره سفارشی الزامی است.',
+            'courses.*.custom_course_title.max' => 'نام دوره سفارشی نباید بیش از ۲۵۵ کاراکتر باشد.',
+            'courses.*.certificate_file.mimes' => 'نوع فایل مدرک مجاز نیست (فقط JPG, PNG, PDF).',
+            'courses.*.certificate_file.max' => 'حجم فایل مدرک بیش از حد مجاز است.',
+
+            'federation_course_id.exists' => 'دوره انتخاب‌شده معتبر نیست.',
+            'custom_course_title.required_without' => 'در صورت انتخاب نکردن دوره از لیست، نام دوره سفارشی الزامی است.',
+            'custom_course_title.max' => 'نام دوره سفارشی نباید بیش از ۲۵۵ کاراکتر باشد.',
+            'certificate_file.mimes' => 'نوع فایل مدرک مجاز نیست (فقط JPG, PNG, PDF).',
+            'certificate_file.max' => 'حجم فایل مدرک بیش از حد مجاز است.',
+        ];
+
+        if ($request->has('courses')) {
+            $request->validate([
+                'courses' => ['required', 'array', 'min:1'],
+                'courses.*.federation_course_id' => 'nullable|exists:federation_courses,id|required_without:courses.*.custom_course_title',
+                'courses.*.custom_course_title'  => 'nullable|string|max:255|required_without:courses.*.federation_course_id',
+                'courses.*.issue_date'           => 'nullable|string',
+                'courses.*.certificate_file'     => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            ], $messages);
+        } else {
+            $request->validate([
+                'federation_course_id' => 'nullable|exists:federation_courses,id|required_without:custom_course_title',
+                'custom_course_title'  => 'nullable|string|max:255|required_without:federation_course_id',
+                'issue_date'           => 'nullable|string',
+                'certificate_file'     => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            ], $messages);
         }
 
-        // ذخیره رکورد جدید
-        EducationalHistory::create([
-            'user_id'             => $user->id,
-            'federation_course_id'=> $request->federation_course_id,
-            'certificate_file'    => $filePath,
-            'issue_date'          => $issueDate,
-        ]);
+        $user = Auth::user();
 
-        return redirect()->route('dashboard.index')->with('success', 'اطلاعات ذخیره شد');
+        $hadNoHistory = !EducationalHistory::where('user_id', $user->id)->exists();
+
+        // Multi items flow
+        if ($request->has('courses')) {
+            foreach ($request->courses as $index => $courseData) {
+                // date
+                $issueDate = null;
+                if (!empty($courseData['issue_date'])) {
+                    try {
+                        $issueDate = Jalalian::fromFormat('Y/m/d', $this->convertToEnglish($courseData['issue_date']))->toCarbon()->toDateString();
+                    } catch (\Exception $e) {
+                        return back()->withErrors(["courses.$index.issue_date" => 'تاریخ وارد شده معتبر نیست. لطفاً تاریخ را به فرمت YYYY/MM/DD وارد کنید.'])->withInput();
+                    }
+                }
+                // file
+                $filePath = null;
+                $file = $request->file("courses.$index.certificate_file");
+                if ($file) {
+                    $filePath = $file->store('educational_certificates', 'public');
+                }
+                EducationalHistory::create([
+                    'user_id'             => $user->id,
+                    'federation_course_id'=> !empty($courseData['federation_course_id']) && $courseData['federation_course_id'] !== '_custom' ? (int) $courseData['federation_course_id'] : null,
+                    'custom_course_title' => !empty($courseData['custom_course_title']) ? trim($courseData['custom_course_title']) : null,
+                    'certificate_file'    => $filePath,
+                    'issue_date'          => $issueDate,
+                ]);
+            }
+        } else {
+            // Single item flow
+            // date
+            $issueDate = null;
+            if ($request->filled('issue_date')) {
+                try {
+                    $issueDate = Jalalian::fromFormat('Y/m/d', $this->convertToEnglish($request->issue_date))->toCarbon()->toDateString();
+                } catch (\Exception $e) {
+                    return back()->withErrors(['issue_date' => 'تاریخ وارد شده معتبر نیست. لطفاً تاریخ را به فرمت YYYY/MM/DD وارد کنید.'])->withInput();
+                }
+            }
+            // file
+            $filePath = null;
+            if ($request->hasFile('certificate_file')) {
+                $filePath = $request->file('certificate_file')->store('educational_certificates', 'public');
+            }
+            EducationalHistory::create([
+                'user_id'             => $user->id,
+                'federation_course_id'=> $request->federation_course_id ?: null,
+                'custom_course_title' => $request->custom_course_title ? trim($request->custom_course_title) : null,
+                'certificate_file'    => $filePath,
+                'issue_date'          => $issueDate,
+            ]);
+        }
+
+        if (session('onboarding') || $hadNoHistory) {
+            session()->forget('onboarding');
+            return redirect()
+                ->route('dashboard.index')
+                ->with('success', 'اطلاعات شما دریافت شد. منتظر تایید مدیر بمانید.');
+        }
+
+        return redirect()->back()->with('success', 'سابقه آموزشی با موفقیت ثبت شد.');
     }
 
     /**
@@ -80,7 +164,8 @@ class EducationalHistoryController extends Controller
             ->firstOrFail();
 
         $request->validate([
-            'federation_course_id' => 'required|exists:federation_courses,id',
+            'federation_course_id' => 'nullable|exists:federation_courses,id|required_without:custom_course_title',
+            'custom_course_title'  => 'nullable|string|max:255|required_without:federation_course_id',
             'issue_date'           => 'nullable|string',
             'certificate_file'     => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
@@ -107,7 +192,8 @@ class EducationalHistoryController extends Controller
         }
 
         $history->update([
-            'federation_course_id' => $request->federation_course_id,
+            'federation_course_id' => $request->federation_course_id ?: null,
+            'custom_course_title'  => $request->custom_course_title ? trim($request->custom_course_title) : null,
             'issue_date'           => $issueDate,
             'certificate_file'     => $filePath ?? $history->certificate_file,
         ]);

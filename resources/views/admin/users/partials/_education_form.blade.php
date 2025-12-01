@@ -1,32 +1,54 @@
 @php
-    $educations = $educations ?? collect([new \App\Models\EducationalHistory()]);
+    $educations = $educations ?? collect();
 @endphp
 
 <div id="education-wrapper">
     @foreach($educations as $index => $edu)
-    <div class="education-item border rounded-3 p-3 mb-3 bg-light position-relative">
-        <button type="button" class="btn-close position-absolute top-0 end-0 m-2 remove-edu" aria-label="حذف"></button>
+    <div class="education-item card mb-3 shadow-sm border-0">
+        <div class="card-body position-relative">
+            <button type="button" class="btn-close position-absolute top-0 end-0 m-3 remove-edu" aria-label="حذف"></button>
+            
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">عنوان دوره</label>
+                    <select name="educations[{{ $index }}][federation_course_id]" class="form-select select-course">
+                        <option value="">انتخاب کنید...</option>
+                        @foreach($federationCourses as $course)
+                            <option value="{{ $course->id }}" 
+                                {{ old("educations.$index.federation_course_id", $edu->federation_course_id ?? '') == $course->id ? 'selected' : '' }}>
+                                {{ $course->title }}
+                            </option>
+                        @endforeach
+                        <option value="_custom" {{ (old("educations.$index.federation_course_id") == '_custom' || ($edu->custom_course_title && !$edu->federation_course_id)) ? 'selected' : '' }}>سایر (دوره سفارشی)</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-4 custom-course-wrap" style="{{ (old("educations.$index.federation_course_id") == '_custom' || ($edu->custom_course_title && !$edu->federation_course_id)) ? '' : 'display:none;' }}">
+                    <label class="form-label">نام دوره سفارشی</label>
+                    <input type="text" name="educations[{{ $index }}][custom_course_title]" 
+                           class="form-control" 
+                           value="{{ old("educations.$index.custom_course_title", $edu->custom_course_title ?? '') }}" 
+                           placeholder="نام دوره">
+                </div>
 
-        <div class="row g-3 align-items-end">
-            <div class="col-md-6">
-                <label class="form-label">نام دوره فدراسیون</label>
-                <select name="educations[{{ $index }}][federation_course_id]" class="form-select selectpicker" data-live-search="true">
-                    <option value="">انتخاب کنید...</option>
-                    @foreach($federationCourses as $course)
-                        <option value="{{ $course->id }}"
-                            {{ old("educations.$index.federation_course_id", $edu->federation_course_id ?? '') == $course->id ? 'selected' : '' }}>
-                            {{ $course->title }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+                <div class="col-md-4">
+                    <label class="form-label">تاریخ صدور مدرک</label>
+                    <input type="text" name="educations[{{ $index }}][issue_date]" 
+                           value="{{ old("educations.$index.issue_date", $edu->issue_date ? \Morilog\Jalali\Jalalian::fromCarbon(\Carbon\Carbon::parse($edu->issue_date))->format('Y/m/d') : '') }}" 
+                           class="form-control" data-jdp autocomplete="off">
+                </div>
 
-            <div class="col-md-6">
-                <label class="form-label">فایل گواهینامه</label>
-                <input type="file" name="educations[{{ $index }}][certificate_file]" class="form-control">
-                @if($edu->certificate_file)
-                    <small class="text-muted">فایل فعلی: {{ basename($edu->certificate_file) }}</small>
-                @endif
+                <div class="col-12">
+                    <label class="form-label">فایل گواهینامه</label>
+                    <input type="file" name="educations[{{ $index }}][certificate_file]" class="filepond" accept="image/*,application/pdf">
+                    @if($edu->certificate_file)
+                        <div class="mt-2">
+                            <a href="{{ asset('storage/'.$edu->certificate_file) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                مشاهده فایل فعلی ({{ basename($edu->certificate_file) }})
+                            </a>
+                        </div>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
@@ -34,106 +56,95 @@
 </div>
 
 <div class="text-center mt-3">
-    <button type="button" id="add-education" class="btn btn-outline-primary">
+    <button type="button" id="add-education" class="btn btn-outline-success">
         <i class="bi bi-plus-circle"></i> افزودن دوره جدید
     </button>
 </div>
 
 <script>
-(function(){
-    // small helpers to load external files
-    function loadScript(url, cb){
-        var s = document.createElement('script');
-        s.src = url; s.async = true;
-        s.onload = cb; s.onerror = cb;
-        document.head.appendChild(s);
-    }
-    function loadCss(url){
-        if(document.querySelector('link[href="'+url+'"]')) return;
-        var l = document.createElement('link');
-        l.rel = 'stylesheet'; l.href = url;
-        document.head.appendChild(l);
-    }
+    document.addEventListener('DOMContentLoaded', function() {
+        const wrapper = document.getElementById('education-wrapper');
+        const addBtn = document.getElementById('add-education');
+        let eduIndex = {{ $educations->count() }};
 
-    // initialize bootstrap-select for selects in "root" (DOM node)
-    function initSelectpicker(root){
-        root = root || document;
-        if (typeof jQuery === 'undefined') {
-            console.warn('jQuery not found — selectpicker cannot initialize.');
-            return;
-        }
-        var $root = jQuery(root);
+        // Initial setup for existing rows
+        wrapper.querySelectorAll('.education-item').forEach(item => setupRow(item));
 
-        if (typeof $.fn.selectpicker === 'undefined') {
-            // load bootstrap-select CSS + JS (CDN)
-            loadCss('https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css');
-            loadScript('https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js', function(){
-                // small delay to ensure plugin registered
-                setTimeout(function(){
-                    $root.find('.selectpicker').each(function(){
-                        if (!$(this).data('selectpicker')) {
-                            $(this).selectpicker();
-                        } else {
-                            $(this).selectpicker('refresh');
-                        }
-                    });
-                }, 50);
-            });
-            return;
-        }
-
-        // plugin already present -> initialize / refresh
-        $root.find('.selectpicker').each(function(){
-            if (!$(this).data('selectpicker')) {
-                $(this).selectpicker();
-            } else {
-                $(this).selectpicker('refresh');
-            }
-        });
-    }
-
-    // DOM events
-    document.addEventListener('DOMContentLoaded', function(){
-        initSelectpicker(document);
-    });
-
-    document.addEventListener('click', function(e) {
-        // remove education
-        if(e.target.closest('.remove-edu')) {
-            e.target.closest('.education-item').remove();
-        }
-
-        // add education
-        if(e.target.id === 'add-education') {
-            const wrapper = document.getElementById('education-wrapper');
-            const index = wrapper.querySelectorAll('.education-item').length;
-
+        addBtn.addEventListener('click', function() {
             const template = `
-            <div class="education-item border rounded-3 p-3 mb-3 bg-light position-relative">
-                <button type="button" class="btn-close position-absolute top-0 end-0 m-2 remove-edu" aria-label="حذف"></button>
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-6">
-                        <label class="form-label">نام دوره فدراسیون</label>
-                        <select name="educations[${index}][federation_course_id]" class="form-select selectpicker" data-live-search="true">
-                            <option value="">انتخاب کنید...</option>
-                            @foreach($federationCourses as $course)
-                                <option value="{{ $course->id }}">{{ $course->title }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label">فایل گواهینامه</label>
-                        <input type="file" name="educations[${index}][certificate_file]" class="form-control">
+            <div class="education-item card mb-3 shadow-sm border-0 animate__animated animate__fadeIn">
+                <div class="card-body position-relative">
+                    <button type="button" class="btn-close position-absolute top-0 end-0 m-3 remove-edu" aria-label="حذف"></button>
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label class="form-label">عنوان دوره</label>
+                            <select name="educations[${eduIndex}][federation_course_id]" class="form-select select-course">
+                                <option value="">انتخاب کنید...</option>
+                                @foreach($federationCourses as $course)
+                                    <option value="{{ $course->id }}">{{ $course->title }}</option>
+                                @endforeach
+                                <option value="_custom">سایر (دوره سفارشی)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 custom-course-wrap" style="display:none;">
+                            <label class="form-label">نام دوره سفارشی</label>
+                            <input type="text" name="educations[${eduIndex}][custom_course_title]" class="form-control" placeholder="نام دوره">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">تاریخ صدور مدرک</label>
+                            <input type="text" name="educations[${eduIndex}][issue_date]" class="form-control" data-jdp autocomplete="off">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">فایل گواهینامه</label>
+                            <input type="file" name="educations[${eduIndex}][certificate_file]" class="filepond" accept="image/*,application/pdf">
+                        </div>
                     </div>
                 </div>
             </div>`;
 
-            wrapper.insertAdjacentHTML('beforeend', template);
+            // Append new row
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = template;
+            const newRow = tempDiv.firstElementChild;
+            wrapper.appendChild(newRow);
 
-            // initialize selectpicker for the newly added item only
-            var newItem = wrapper.lastElementChild;
-            initSelectpicker(newItem);
+            // Setup logic for new row
+            setupRow(newRow);
+            
+            // Initialize plugins for new row
+            if(window.jalaliDatepicker) jalaliDatepicker.startWatch({ persianDigits: true });
+            if(window.FilePond) FilePond.create(newRow.querySelector('.filepond'), {
+                labelIdle: 'فایل را بکشید و رها کنید یا <span class="filepond--label-action">انتخاب کنید</span>',
+                credits: false,
+                storeAsFile: true,
+            });
+
+            eduIndex++;
+        });
+
+        wrapper.addEventListener('click', function(e) {
+            if(e.target.closest('.remove-edu')) {
+                const item = e.target.closest('.education-item');
+                // Only remove if it's not the only one (optional, or allow removing all)
+                // Assuming allow removing all for admin
+                item.remove();
+            }
+        });
+
+        function setupRow(row) {
+            const select = row.querySelector('.select-course');
+            const customWrap = row.querySelector('.custom-course-wrap');
+            
+            if(select && customWrap) {
+                select.addEventListener('change', function() {
+                    if(this.value === '_custom') {
+                        customWrap.style.display = 'block';
+                    } else {
+                        customWrap.style.display = 'none';
+                        customWrap.querySelector('input').value = '';
+                    }
+                });
+            }
         }
     });
-})();
 </script>

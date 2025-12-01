@@ -12,7 +12,6 @@
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
         <link href="{{ asset('css/fonts.css') }}" rel="stylesheet">
-        <link href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
         <link rel="stylesheet" href="{{ asset('vendor/jalali-datepicker/dist/jalalidatepicker.min.css') }}">
         <link rel="stylesheet" href="{{ asset('css/app.css') }}">
@@ -29,6 +28,7 @@
         </style>
     </head>
     <body>
+        @include('partials.preloader')
         <header>
             <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm py-3">
                 <div class="container">
@@ -171,19 +171,19 @@
     </footer>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/persian-date@1.0.6/dist/persian-date.min.js"></script>
         {{-- نقشه و تاریخ --}}
         <script>
             // سال شمسی به فارسی
-            const date = new persianDate();
-            document.getElementById('shamsi-year').innerText = date.year().toString().replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+            try {
+                const date = new Date();
+                const year = new Intl.DateTimeFormat('fa-IR-u-nu-latn', { year: 'numeric' }).format(date);
+                document.getElementById('shamsi-year').innerText = year.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+            } catch (e) {}
 
             // نقشه
             var map = L.map('map').setView([35.8232941, 50.9331318], 16);
@@ -193,8 +193,58 @@
             L.marker([35.8232941, 50.9331318]).addTo(map);
         </script>
 
-        <script src="{{ asset('vendor/jalali-datepicker/dist/jalalidatepicker.min.js') }}"></script>
-        <script src="{{ asset('js/jalali-datepicker-init.js') }}"></script>
+    <script src="{{ asset('vendor/jalali-datepicker/dist/jalalidatepicker.min.js') }}"></script>
+    <script src="{{ asset('js/jalali-datepicker-init.js') }}"></script>
+
+    @stack('modals')
+
+    <script>
+    // Normalize Persian/Arabic digits to English in inputs/textareas
+    (function(){
+        const map = {'۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9',
+                     '٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
+        const pattern = /[۰-۹٠-٩]/g;
+        function normalize(str){ return String(str).replace(pattern, d => map[d] || d); }
+        function bind(el){
+            el.addEventListener('input', e => {
+                const v = e.target.value;
+                if (pattern.test(v)) {
+                    const start = e.target.selectionStart, end = e.target.selectionEnd;
+                    e.target.value = normalize(v);
+                    if (start != null && end != null) e.target.setSelectionRange(start, end);
+                }
+            });
+        }
+        document.addEventListener('DOMContentLoaded', function(){
+            document.querySelectorAll('input, textarea').forEach(bind);
+            new MutationObserver(muts => muts.forEach(m => m.addedNodes.forEach(n => {
+                if (n.nodeType === 1) {
+                    if (n.matches && n.matches('input,textarea')) bind(n);
+                    n.querySelectorAll?.('input,textarea').forEach(bind);
+                }
+            }))).observe(document.body, {childList:true, subtree:true});
+        });
+    })();
+
+    // Convert English digits to Persian in rendered text (not in form fields)
+    (function(){
+        const map = {'0':'۰','1':'۱','2':'۲','3':'۳','4':'۴','5':'۵','6':'۶','7':'۷','8':'۸','9':'۹'};
+        function toFa(str){ return String(str).replace(/\d/g, d => map[d] || d); }
+        function shouldSkip(node){
+            return node.closest && node.closest('input,textarea,script,style,pre,code');
+        }
+        function walk(node){
+            if (node.nodeType === 3) {
+                if (!shouldSkip(node)) node.nodeValue = toFa(node.nodeValue);
+                return;
+            }
+            if (node.nodeType === 1 && !['INPUT','TEXTAREA','SCRIPT','STYLE'].includes(node.tagName)) {
+                node.childNodes.forEach(walk);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', () => walk(document.body));
+    })();
+    </script>
 
         @stack('scripts')
     </body>

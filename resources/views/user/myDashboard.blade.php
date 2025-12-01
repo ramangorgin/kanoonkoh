@@ -23,8 +23,18 @@
 
     $completedSteps = ($hasProfile ? 1 : 0) + ($hasMedical ? 1 : 0) + ($hasEducation ? 1 : 0);
 
-    $registrationStatus = $user->profile->membership_status ?? null; // expected values: null / 'pending' / 'approved' / 'rejected'
-    $rejectionReason = $user->profile->rejection_reason ?? null;
+    $registrationStatus = optional($user->profile)->membership_status; // null / 'pending' / 'approved' / 'rejected'
+    $rejectionReason = optional($user->profile)->rejection_reason;
+
+    // Photo logic
+    $userPhoto = asset('images/default-avatar.png');
+    if ($hasProfile && !empty($user->profile->photo)) {
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($user->profile->photo)) {
+            $userPhoto = \Illuminate\Support\Facades\Storage::disk('public')->url($user->profile->photo);
+        } elseif (file_exists(public_path($user->profile->photo))) {
+            $userPhoto = asset($user->profile->photo);
+        }
+    }
 @endphp
 
 <div class="container py-4">
@@ -84,23 +94,41 @@
 
     {{-- existing dashboard content (profile card, payments, settings) --}}
     <div class="card mb-4">
-        <div class="card-body d-flex align-items-center">
-            <img src="{{ $user->profile && $user->profile->photo ? asset('storage/photos/' . $user->profile->photo) : asset('images/default-avatar.png') }}" alt="عکس کاربر" class="img-thumbnail me-3" style="max-height: 120px;">
+        <div class="card-body d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+                <img src="{{ $userPhoto }}" alt="عکس کاربر" class="img-thumbnail me-3" style="width: 120px; height: 120px; object-fit: cover;">
 
-            <div>
-                <h5 style="font-family: Vazirmatn;" class="mb-3">
-                    {{ $user->profile->first_name ?? '' }} {{ $user->profile->last_name ?? '' }}
-                </h5>
-                <small class="text-muted mb-2">
-                    وضعیت عضویت:
-                    {{ $user->profile->membership_status ? ($user->profile->membership_status == 'approved' ? 'تایید شده' : ($user->profile->membership_status == 'pending' ? 'در انتظار' : ($user->profile->membership_status == 'rejected' ? 'رد شده' : $user->profile->membership_status))) : ($completedSteps < 3 ? 'نیمه‌تمام' : 'در انتظار') }}
-                </small><br>
-                <small class="text-muted">
-                    تاریخ عضویت:
-                    {{ $user->profile->membership_date ? jdate($user->profile->membership_date)->format('Y/m/d') : 'تنظیم نشده' }}
-                </small>
+                <div>
+                    <h5 style="font-family: Vazirmatn;" class="mb-3">
+                        {{ optional($user->profile)->first_name ?? '' }} {{ optional($user->profile)->last_name ?? '' }}
+                    </h5>
+                    <small class="text-muted mb-2">
+                        وضعیت عضویت:
+                        {{ optional($user->profile)->membership_status ? (optional($user->profile)->membership_status == 'approved' ? 'تایید شده' : (optional($user->profile)->membership_status == 'pending' ? 'در انتظار' : (optional($user->profile)->membership_status == 'rejected' ? 'رد شده' : optional($user->profile)->membership_status))) : ($completedSteps < 3 ? 'نیمه‌تمام' : 'در انتظار') }}
+                    </small><br>
+                    <small class="text-muted">
+                        تاریخ عضویت:
+                        {{ optional($user->profile)->membership_date ? toPersianDate(optional($user->profile)->membership_date) : 'تنظیم نشده' }}
+                    </small>
+                </div>
             </div>
+
+            @if($user->role === 'admin')
+                <div class="d-none d-md-block">
+                    <a href="{{ route('admin.dashboard') }}" class="btn btn-dark shadow-sm">
+                        <i class="bi bi-speedometer2 me-2"></i> ورود به پنل مدیریت
+                    </a>
+                </div>
+            @endif
         </div>
+        {{-- Mobile Admin Button --}}
+        @if($user->role === 'admin')
+            <div class="card-footer d-md-none text-center">
+                <a href="{{ route('admin.dashboard') }}" class="btn btn-dark w-100">
+                    <i class="bi bi-speedometer2 me-2"></i> ورود به پنل مدیریت
+                </a>
+            </div>
+        @endif
     </div>
 
     {{-- rest of existing dashboard cards and links --}}
@@ -111,7 +139,7 @@
             <div class="card">
                 <div class="card-header">مشخصات کاربری</div>
                 <div class="card-body">
-                    <p><strong>نام:</strong> {{ $user->profile->first_name ?? '' }} {{ $user->profile->last_name ?? '' }}</p>
+                    <p><strong>نام:</strong> {{ optional($user->profile)->first_name ?? '' }} {{ optional($user->profile)->last_name ?? '' }}</p>
                     <p><strong>شماره تلفن:</strong> {{ $user->phone }}</p>
                     <a href="{{ route('dashboard.profile.edit') }}" class="btn btn-sm btn-outline-primary">ویرایش مشخصات</a>
                 </div>

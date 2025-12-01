@@ -3,10 +3,15 @@
 @endphp
 
 <div class="row g-3">
-    {{-- مشخصات فیزیکی --}}
+    {{-- Physical Stats --}}
     <div class="col-md-2">
         <label class="form-label">گروه خونی</label>
-        <input type="text" name="blood_type" value="{{ old('blood_type', $medical->blood_type ?? '') }}" class="form-control">
+        <select name="blood_type" class="form-select">
+            <option value="">انتخاب...</option>
+            @foreach(['O+','O-','A+','A-','B+','B-','AB+','AB-'] as $type)
+                <option value="{{ $type }}" {{ old('blood_type', $medical->blood_type ?? '') == $type ? 'selected' : '' }}>{{ $type }}</option>
+            @endforeach
+        </select>
     </div>
     <div class="col-md-2">
         <label class="form-label">قد (cm)</label>
@@ -17,133 +22,107 @@
         <input type="number" name="weight" value="{{ old('weight', $medical->weight ?? '') }}" class="form-control">
     </div>
 
-    {{-- اطلاعات بیمه --}}
+    {{-- Insurance Info --}}
     <div class="col-md-3">
         <label class="form-label">تاریخ صدور بیمه</label>
-        <input type="text" id="insurance_issue_date" name="insurance_issue_date" value="{{ old('insurance_issue_date', $medical->insurance_issue_date ?? '') }}" class="form-control jalali-date" autocomplete="off">
-
+        <input type="text" name="insurance_issue_date" 
+               value="{{ old('insurance_issue_date', $medical->insurance_issue_date ? \Morilog\Jalali\Jalalian::fromCarbon(\Carbon\Carbon::parse($medical->insurance_issue_date))->format('Y/m/d') : '') }}" 
+               class="form-control" data-jdp autocomplete="off">
     </div>
     <div class="col-md-3">
         <label class="form-label">تاریخ انقضای بیمه</label>
-        <input type="text" id="insurance_expiry_date" name="insurance_expiry_date" value="{{ old('insurance_expiry_date', $medical->insurance_expiry_date ?? '') }}" class="form-control jalali-date" autocomplete="off">
+        <input type="text" name="insurance_expiry_date" 
+               value="{{ old('insurance_expiry_date', $medical->insurance_expiry_date ? \Morilog\Jalali\Jalalian::fromCarbon(\Carbon\Carbon::parse($medical->insurance_expiry_date))->format('Y/m/d') : '') }}" 
+               class="form-control" data-jdp autocomplete="off">
     </div>
-    <div class="col-md-6">
-        <label class="form-label">فایل بیمه</label>
-        <input type="file" name="insurance_file" class="form-control">
+    <div class="col-12">
+        <label class="form-label">فایل بیمه ورزشی</label>
+        <input type="file" name="insurance_file" class="filepond" accept="image/*,application/pdf">
         @if($medical->insurance_file)
-            <small class="text-muted">فایل فعلی: {{ basename($medical->insurance_file) }}</small>
+            <div class="mt-2">
+                <a href="{{ asset('storage/'.$medical->insurance_file) }}" target="_blank" class="btn btn-sm btn-outline-primary">مشاهده فایل فعلی</a>
+            </div>
         @endif
     </div>
 
     <hr class="mt-4 mb-2">
 
-    {{-- پرسش‌های پزشکی --}}
-    <h6 class="fw-bold text-primary mb-3"><i class="bi bi-heart-pulse"></i> وضعیت‌های سلامتی</h6>
+    {{-- Medical Questions --}}
+    <h6 class="fw-bold text-primary mb-3"><i class="bi bi-heart-pulse"></i> سوابق بیماری و وضعیت جسمانی</h6>
 
     @php
+        // Matching user panel questions + comprehensive list for admin
         $questions = [
-            'head_injury' => 'ضربه به سر',
-            'eye_ear_problems' => 'مشکلات چشم یا گوش',
-            'seizures' => 'تشنج',
-            'respiratory' => 'مشکلات تنفسی',
+            'head_injury' => 'سابقه ضربه مغزی یا آسیب سر',
+            'eye_ear_problems' => 'مشکلات چشم و گوش',
+            'seizures' => 'تشنج یا غش',
+            'respiratory' => 'بیماری‌های تنفسی (آسم و...)',
             'heart' => 'مشکلات قلبی',
+            // Extra fields for Admin view (if DB supports them)
             'blood_pressure' => 'فشار خون',
-            'blood_disorders' => 'اختلالات خونی',
             'diabetes_hepatitis' => 'دیابت / هپاتیت',
-            'stomach' => 'مشکلات معده',
-            'kidney' => 'مشکلات کلیه',
-            'mental' => 'اختلالات روانی',
-            'addiction' => 'اعتیاد',
-            'surgery' => 'جراحی',
-            'skin_allergy' => 'آلرژی پوستی',
-            'drug_allergy' => 'آلرژی دارویی',
-            'insect_allergy' => 'آلرژی به نیش حشرات',
-            'dust_allergy' => 'آلرژی به گرد و غبار',
-            'medications' => 'مصرف دارو',
-            'bone_joint' => 'مشکلات استخوان و مفصل',
-            'hiv' => 'HIV / ایدز',
-            'treatment' => 'درمان در حال انجام',
+            'kidney' => 'مشکلات کلیوی',
+            'surgery' => 'سابقه جراحی',
+            'bone_joint' => 'مشکلات استخوانی و مفصلی',
+            'medications' => 'مصرف داروی خاص',
         ];
     @endphp
 
-    @foreach(array_chunk($questions, 3, true) as $chunk)
-        @foreach($chunk as $field => $label)
-            <div class="col-md-4">
-                <label class="form-check-label">
-                    {{-- add data-target to link checkbox with its detail wrapper --}}
-                    <input type="checkbox"
-                           name="{{ $field }}"
-                           value="1"
-                           class="form-check-input me-1 medical-toggle"
-                           data-target="#{{ $field }}_details_wrapper"
-                           {{ old($field, $medical->$field ?? false) ? 'checked' : '' }}>
-                    {{ $label }}
-                </label>
-            </div>
-        @endforeach
-    @endforeach
-
-    {{-- details wrappers (hidden unless related checkbox is checked) --}}
-    @foreach($questions as $field => $label)
-        @php
-            $detailsName = $field . '_details';
-            $detailsValue = old($detailsName, $medical->{$detailsName} ?? '');
-            $visible = old($field, $medical->$field ?? false) ? '' : 'display:none';
-        @endphp
-        <div id="{{ $field }}_details_wrapper" class="col-12 mt-3 detail-wrapper" style="{{ $visible }}">
-            <label class="form-label">جزئیات {{ $label }}</label>
-            <textarea name="{{ $detailsName }}" class="form-control">{{ $detailsValue }}</textarea>
+    @foreach(array_chunk($questions, 2, true) as $chunk)
+        <div class="row">
+            @foreach($chunk as $field => $label)
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">{{ $label }}</label>
+                    <div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input medical-toggle" type="radio" name="{{ $field }}" 
+                                   id="{{ $field }}_yes" value="1" data-target="#{{ $field }}_details"
+                                   {{ old($field, $medical->$field ?? null) == 1 ? 'checked' : '' }}>
+                            <label class="form-check-label" for="{{ $field }}_yes">بله</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input medical-toggle" type="radio" name="{{ $field }}" 
+                                   id="{{ $field }}_no" value="0" data-target="#{{ $field }}_details"
+                                   {{ old($field, $medical->$field ?? null) == 0 ? 'checked' : '' }}>
+                            <label class="form-check-label" for="{{ $field }}_no">خیر</label>
+                        </div>
+                    </div>
+                    <div id="{{ $field }}_details" class="mt-2" style="{{ old($field, $medical->$field ?? null) == 1 ? '' : 'display:none;' }}">
+                        <textarea name="{{ $field }}_details" class="form-control" placeholder="توضیحات تکمیلی..." rows="2">{{ old($field.'_details', $medical->{$field.'_details'} ?? '') }}</textarea>
+                    </div>
+                </div>
+            @endforeach
         </div>
     @endforeach
 
     <div class="col-12 mt-3">
-        <label class="form-label">سایر شرایط خاص</label>
-        <textarea name="other_conditions" class="form-control">{{ old('other_conditions', $medical->other_conditions ?? '') }}</textarea>
+        <label class="form-label">سایر توضیحات پزشکی</label>
+        <textarea name="other_conditions" class="form-control" rows="3">{{ old('other_conditions', $medical->other_conditions ?? '') }}</textarea>
+    </div>
+    
+    <div class="col-12 mt-2">
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" name="commitment_signed" value="1" id="commitment_signed" 
+                {{ old('commitment_signed', $medical->commitment_signed ?? false) ? 'checked' : '' }}>
+            <label class="form-check-label" for="commitment_signed">تعهدنامه پزشکی امضا شده است</label>
+        </div>
     </div>
 </div>
 
-@push('scripts')
 <script>
-    (function($){
-        $(document).ready(function(){
-            // toggle detail wrapper on change
-            $(document).on('change', '.medical-toggle', function(){
-                var $cb = $(this);
-                var target = $cb.data('target');
-                if (!target) return;
-                if ($cb.is(':checked')) {
-                    $(target).slideDown(150);
-                } else {
-                    // clear textarea inside wrapper and hide
-                    $(target).find('textarea, input').val('');
-                    $(target).slideUp(150);
+    document.addEventListener('DOMContentLoaded', function(){
+        const toggles = document.querySelectorAll('.medical-toggle');
+        toggles.forEach(toggle => {
+            toggle.addEventListener('change', function(){
+                const targetId = this.dataset.target;
+                const target = document.querySelector(targetId);
+                if(target && this.value == '1'){
+                    target.style.display = 'block';
+                } else if(target && this.value == '0'){
+                    target.style.display = 'none';
+                    target.querySelector('textarea').value = '';
                 }
-            });
-
-            // ensure initial state matches checkboxes (in case server-render differs)
-            $('.medical-toggle').each(function(){
-                var $cb = $(this);
-                var target = $cb.data('target');
-                if (!target) return;
-                if ($cb.is(':checked')) {
-                    $(target).show();
-                } else {
-                    $(target).hide();
-                }
-            });
-
-            // optional: before submit ensure unchecked detail fields are cleared (redundant with change handler)
-            $('form').on('submit', function(){
-                $('.medical-toggle').each(function(){
-                    var $cb = $(this);
-                    var target = $cb.data('target');
-                    if (!target) return;
-                    if (!$cb.is(':checked')) {
-                        $(target).find('textarea, input').val('');
-                    }
-                });
             });
         });
-    })(jQuery);
+    });
 </script>
-@endpush

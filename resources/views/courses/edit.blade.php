@@ -34,11 +34,17 @@
         <div class="row">
             <div class="col-md-6 mb-2">
                 <label>تاریخ شروع</label>
-                <input type="text" name="start_date" class="form-control datepicker" value="{{ $course->start_date }}">
+                <div class="input-group">
+                    <input type="text" name="start_date" class="form-control" data-jdp value="{{ $course->start_date }}">
+                    <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                </div>
             </div>
             <div class="col-md-6 mb-2">
                 <label>تاریخ پایان</label>
-                <input type="text" name="end_date" class="form-control datepicker" value="{{ $course->end_date }}">
+                <div class="input-group">
+                    <input type="text" name="end_date" class="form-control" data-jdp value="{{ $course->end_date }}">
+                    <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                </div>
             </div>
         </div>
 
@@ -120,7 +126,10 @@
 
         <div class="mb-2" id="deadline_section">
             <label>مهلت ثبت‌نام</label>
-            <input type="text" name="registration_deadline" class="form-control datepicker" value="{{ $course->registration_deadline }}">
+            <div class="input-group">
+                <input type="text" name="registration_deadline" class="form-control" data-jdp value="{{ $course->registration_deadline }}">
+                <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+            </div>
         </div>
 
         <button class="btn btn-primary mt-3" style="width: 100%;">ذخیره تغییرات</button>
@@ -129,13 +138,19 @@
 
 @section('scripts')
 <script src="https://cdn.ckeditor.com/4.20.2/standard/ckeditor.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    if (window.jalaliDatepicker?.startWatch) {
+        jalaliDatepicker.startWatch({ persianDigits: true });
+    }
+});
+</script>
 <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 
 <script>
     $(document).ready(function () {
         CKEDITOR.replace('description');
-        $('.datepicker').persianDatepicker({ format: 'YYYY/MM/DD' });
+        // date pickers handled by jalaliDatepicker
 
         var lat = {{ $course->{'place-lat'} ?? 35.6892 }};
         var lon = {{ $course->{'place-lon'} ?? 51.3890 }};

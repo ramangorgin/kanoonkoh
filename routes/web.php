@@ -52,19 +52,7 @@ Route::get('/auth/register/verify', [AuthController::class, 'showRegisterVerifyF
 Route::post('/auth/register/verify', [AuthController::class, 'registerVerifyOtp'])->name('auth.register.verifyOtp');
 // ==========================
 
-// Sign-Up Wizard
-// ==========================
-Route::get('/auth/register/step1', [AuthController::class, 'showRegisterStep1'])->name('auth.register.step1');
-Route::post('/auth/register/step1', [AuthController::class, 'storeRegisterStep1'])->name('auth.register.storeStep1');
-
-Route::get('/auth/register/step2', [AuthController::class, 'showRegisterStep2'])->name('auth.register.step2');
-Route::post('/auth/register/step2', [AuthController::class, 'storeRegisterStep2'])->name('auth.register.storeStep2');
-
-Route::get('/auth/register/step3', [AuthController::class, 'showRegisterStep3'])->name('auth.register.step3');
-Route::post('/auth/register/step3', [AuthController::class, 'storeRegisterStep3'])->name('auth.register.storeStep3');
-
-Route::get('/auth/register/complete', [AuthController::class, 'registerComplete'])->name('auth.register.complete');
-// ==========================
+// Old 3-step wizard routes removed (replaced by dashboard onboarding)
 
 //general Programs
 Route::get('/programs', [ProgramController::class, 'archive'])->name('programs.archive');
@@ -77,29 +65,30 @@ Route::get('/courses/{course}', [CourseController::class, 'show'])->name('course
 
 
 
-//User Dashboard routes:
-Route::prefix('dashboard')->name('dashboard.')->middleware('auth')->group(function () {
-
+// User Dashboard routes (single canonical set)
+Route::middleware('auth')->prefix('dashboard')->name('dashboard.')->group(function () {
     Route::get('/', [UserDashboardController::class, 'index'])->name('index');
 
+    // Profile
+    Route::get('/profile/show', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile/{user}', [ProfileController::class, 'update'])->name('profile.update');
+
+    // Medical Record
+    Route::get('/medical', [MedicalRecordController::class, 'show'])->name('medicalRecord.edit');
+    Route::put('/medical', [MedicalRecordController::class, 'update'])->name('medicalRecord.update');
+
+    // Educational History
     Route::get('/educational-histories', [EducationalHistoryController::class, 'index'])->name('educationalHistory.index');
     Route::post('/educational-histories', [EducationalHistoryController::class, 'store'])->name('educationalHistory.store');
     Route::put('/educational-histories/{id}', [EducationalHistoryController::class, 'update'])->name('educationalHistory.update');
     Route::delete('/educational-histories/{id}', [EducationalHistoryController::class, 'destroy'])->name('educationalHistory.destroy');
 
-    Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
-    Route::post('/profile', [ProfileController::class, 'store'])->name('profile.store');
-    Route::put('/profile/{user}', [ProfileController::class, 'update'])->name('profile.update');
-
-    Route::get('/medical-record', [MedicalRecordController::class, 'show'])->name('medicalRecord.show');
-    Route::put('/medical-record', [MedicalRecordController::class, 'update'])->name('medicalRecord.update');
-
+    // Payments & Settings
     Route::get('/my-payments', [PaymentController::class, 'UserIndex'])->name('payments.index');
     Route::post('/my-payments', [PaymentController::class, 'store'])->name('payments.store');
-
     Route::get('/settings', [UserDashboardController::class, 'settings'])->name('settings');
     Route::post('/settings', [SettingsController::class, 'updatePassword'])->name('settings.updatePassword');
-
 });
 
 Route::get('/api/programs/list', [PaymentController::class, 'getPrograms']);
@@ -143,25 +132,5 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::post('/payments/{id}/reject', [AdminPaymentController::class, 'reject'])->name('admin.payments.reject');
 });
 
-Route::get('/auth/login', [AuthController::class, 'showLoginForm'])->name('auth.login');
-Route::post('/auth/login/request-otp', [AuthController::class, 'loginRequestOtp'])->name('auth.login.requestOtp');
-Route::get('/auth/login/verify', [AuthController::class, 'showLoginVerifyForm'])->name('auth.login.verifyForm');
-Route::post('/auth/login/verify', [AuthController::class, 'loginVerifyOtp'])->name('auth.login.verifyOtp');
-
-Route::get('/auth/register', [AuthController::class, 'showRegisterForm'])->name('auth.register');
-Route::post('/auth/register/request-otp', [AuthController::class, 'registerRequestOtp'])->name('auth.register.requestOtp');
-Route::get('/auth/register/verify', [AuthController::class, 'showRegisterVerifyForm'])->name('auth.register.verifyForm');
-Route::post('/auth/register/verify', [AuthController::class, 'registerVerifyOtp'])->name('auth.register.verifyOtp');
-
-
-// Dashboard routes (after login)
-Route::middleware('auth')->group(function() {
-    Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard.index');
-    Route::get('/dashboard/profile/show', [ProfileController::class, 'show'])->name('dashboard.profile.show');
-    Route::get('/dashboard/profile', [ProfileController::class, 'edit'])->name('dashboard.profile.edit');
-    Route::post('/dashboard/profile', [ProfileController::class, 'update'])->name('dashboard.profile.update');
-    Route::get('/dashboard/medical', [MedicalRecordController::class, 'edit'])->name('dashboard.medical.edit');
-    Route::post('/dashboard/medical', [MedicalRecordController::class, 'update'])->name('dashboard.medical.update');
-    Route::get('/dashboard/education', [EducationalHistoryController::class, 'index'])->name('dashboard.educationalHistory.index');
-});
+// (Removed duplicate route blocks at file end)
 

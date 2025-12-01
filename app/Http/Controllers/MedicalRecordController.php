@@ -24,10 +24,6 @@ class MedicalRecordController extends Controller
         $user = Auth::user();
         $medical = $user->medicalRecord;
 
-        if (!$medical) {
-            return redirect()->back()->withErrors(['notfound' => 'پرونده پزشکی یافت نشد.']);
-        }
-
         $validated = $request->validate([
             'insurance_issue_date' => ['nullable', 'string'],
             'insurance_expiry_date'=> ['nullable', 'string'],
@@ -37,15 +33,6 @@ class MedicalRecordController extends Controller
             'weight'               => ['nullable', 'integer', 'min:20', 'max:250'],
             'commitment_signed'    => ['required', 'boolean'],
         ]);
-
-        if ($request->insurance_issue_date) {
-            try {
-                $validated['insurance_issue_date'] =
-                    Jalalian::fromFormat('Y/m/d', $request->insurance_issue_date)->toCarbon()->format('Y-m-d');
-            } catch (\Exception $e) {
-                $validated['insurance_issue_date'] = null;
-            }
-        }
 
         if ($request->insurance_issue_date) {
             $date = $this->fixPersianNumbers($request->insurance_issue_date);
@@ -67,13 +54,31 @@ class MedicalRecordController extends Controller
             }
         }
 
+        // ذخیره فایل بیمه (در صورت ارسال)
+        if ($request->hasFile('insurance_file')) {
+            $validated['insurance_file'] = $request->file('insurance_file')->store('insurance', 'public');
+        }
+
         $validated = array_merge(
             $validated,
             $request->except(['insurance_file', '_token', '_method', 'insurance_issue_date', 'insurance_expiry_date'])
         );
 
-        $medical->update($validated);
+        if (!$medical) {
+            // ایجاد رکورد جدید در اولین ارسال
+            $medical = new MedicalRecord($validated);
+            $user->medicalRecord()->save($medical);
+        } else {
+            $medical->update($validated);
+        }
 
+
+        if (session('onboarding') || !auth()->user()->educationalHistories()->exists()) {
+            return redirect()
+                ->route('dashboard.educationalHistory.index')
+                ->with('onboarding', true)
+                ->with('success', 'پرونده پزشکی با موفقیت ذخیره شد. لطفاً سوابق آموزشی را تکمیل کنید.');
+        }
 
         return redirect()->back()->with('success', 'پرونده پزشکی با موفقیت به‌روزرسانی شد.');
 

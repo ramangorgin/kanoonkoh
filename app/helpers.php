@@ -1,9 +1,39 @@
 <?php
-if (! function_exists('toPersianNumber')) {
-    function toPersianNumber($string)
+
+use Morilog\Jalali\Jalalian;
+use Carbon\Carbon;
+
+if (! function_exists('toPersianDate')) {
+    function toPersianDate($date)
     {
-        $persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
-        $english = ['0','1','2','3','4','5','6','7','8','9'];
-        return str_replace($english, $persian, (string) $string);
+        if (! $date) return '';
+        try {
+            return Jalalian::fromCarbon(Carbon::parse($date))->format('Y/m/d');
+        } catch (\Throwable $e) {
+            return '';
+        }
     }
+}
+
+if (! function_exists('en_digits')) {
+    function en_digits($string)
+    {
+        $map = ['۰'=>'0','۱'=>'1','۲'=>'2','۳'=>'3','۴'=>'4','۵'=>'5','۶'=>'6','۷'=>'7','۸'=>'8','۹'=>'9',
+                '٠'=>'0','١'=>'1','٢'=>'2','٣'=>'3','٤'=>'4','٥'=>'5','٦'=>'6','٧'=>'7','٨'=>'8','٩'=>'9'];
+        return strtr((string)$string, $map);
+    }
+}
+
+if (! function_exists('fa_digits')) {
+    function fa_digits($string)
+    {
+        $en = ['0','1','2','3','4','5','6','7','8','9'];
+        $fa = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+        return str_replace($en, $fa, (string)$string);
+    }
+}
+
+// Backward compatibility
+if (! function_exists('toPersianNumber')) {
+    function toPersianNumber($string) { return fa_digits($string); }
 }

@@ -16,13 +16,7 @@ class ProfileController extends Controller
     public function show()
     {
         $user = Auth::user();
-        $profile = $user->profile;
-
-
-        if (!$profile) {
-            return redirect()->back()->withErrors(['msg' => 'پروفایل یافت نشد.']);
-        }
-
+        $profile = $user->profile ?? new Profile();
         return view('user.myProfile', compact('user', 'profile'));
     }
 
@@ -109,9 +103,6 @@ class ProfileController extends Controller
         }
 
         $profile = $user->profile;
-        if (!$profile) {
-            return redirect()->back()->withErrors(['msg' => 'پروفایلی برای این کاربر یافت نشد.']);
-        }
 
         // قوانین اعتبارسنجی
         $rules = [
@@ -123,7 +114,7 @@ class ProfileController extends Controller
             'birth_date' => 'nullable|string',
             'national_id' => 'nullable|string',
             'photo' => 'nullable|image|max:2048',
-            'national_card' => 'nullable|file|max:4096',
+            'national_card' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:4096',
             'marital_status' => 'nullable|string',
             'emergency_phone' => 'nullable|string',
             'referrer' => 'nullable|string',
@@ -133,11 +124,32 @@ class ProfileController extends Controller
             'work_address' => 'nullable|string',
         ];
 
+        // اگر پروفایل وجود ندارد، برخی فیلدها را اجباری کن
+        if (!$profile) {
+            $rules['photo'] = 'required|image|max:2048';
+            $rules['national_card'] = 'required|file|mimes:jpg,jpeg,png,pdf|max:4096';
+            $rules['national_id'] = 'required|string|size:10';
+        }
+
         $validated = $request->validate($rules);
 
-        // 🔹 فقط اعداد فارسی تاریخ رو به انگلیسی تبدیل کن
+        // نرمال‌سازی اعداد فارسی → انگلیسی برای فیلدهای عددی
+        foreach (['national_id','id_number','emergency_phone'] as $numField) {
+            if (!empty($validated[$numField])) {
+                $validated[$numField] = en_digits($validated[$numField]);
+            }
+        }
+
+        // 🔹 تبدیل تاریخ تولد شمسی به میلادی (در صورت ارسال)
         if (!empty($validated['birth_date'])) {
-            $validated['birth_date'] = $this->convertNumbersToEnglish($validated['birth_date']);
+            $validated['birth_date'] = en_digits($validated['birth_date']);
+            try {
+                $validated['birth_date'] = \Morilog\Jalali\Jalalian::fromFormat('Y/m/d', $validated['birth_date'])
+                    ->toCarbon()
+                    ->format('Y-m-d');
+            } catch (\Throwable $e) {
+                return redirect()->back()->withErrors(['birth_date' => 'تاریخ تولد معتبر نیست.'])->withInput();
+            }
         }
 
         // 🔹 ذخیره‌ی فایل‌ها (در صورت وجود)
@@ -149,8 +161,24 @@ class ProfileController extends Controller
             $validated['national_card'] = $request->file('national_card')->store('national_cards', 'public');
         }
 
-        // 🔹 به‌روزرسانی اطلاعات
-        $profile->update($validated);
+        // 🔹 ایجاد یا به‌روزرسانی
+        if (!$profile) {
+            // membership_id الزامی
+            $validated['membership_id'] = method_exists(Profile::class, 'generateMembershipId')
+                ? Profile::generateMembershipId()
+                : (int) (time() . rand(100, 999));
+            $profile = $user->profile()->create($validated);
+        } else {
+            $profile->update($validated);
+        }
+
+        // 🔹 در حالت راهنمای ثبت‌نام، به مرحله بعد هدایت شود
+        if (session('onboarding') || !auth()->user()->medicalRecord) {
+            return redirect()
+                ->route('dashboard.medicalRecord.edit')
+                ->with('onboarding', true)
+                ->with('success', 'مشخصات با موفقیت ذخیره شد. لطفاً پرونده پزشکی را تکمیل کنید.');
+        }
 
         return redirect()->back()->with('success', 'مشخصات با موفقیت به‌روزرسانی شد.');
     }

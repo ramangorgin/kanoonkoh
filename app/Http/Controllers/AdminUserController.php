@@ -365,14 +365,12 @@ class AdminUserController extends Controller
     /** عضویت‌های در انتظار (اختیاری اگر لازم دارید) **/
     public function pendingMemberships()
     {
-        $users = User::with('profile')
-            ->whereHas('profile', function ($q) {
-                $q->where('membership_status', 'pending');
-            })
+        $pendingProfiles = Profile::where('membership_status', 'pending')
+            ->with('user')
             ->latest()
-            ->paginate(10);
+            ->get(); // or paginate(10) if you prefer
 
-        return view('admin.users.pending', compact('users'));
+        return view('admin.users.pending', compact('pendingProfiles'));
     }
 
     /** تایید عضویت **/

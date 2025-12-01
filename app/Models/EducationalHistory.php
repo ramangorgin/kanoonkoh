@@ -16,6 +16,7 @@ class EducationalHistory extends Model
     protected $fillable = [
         'user_id',
         'federation_course_id',
+        'custom_course_title',
         'issue_date', 
         'certificate_file',
     ];

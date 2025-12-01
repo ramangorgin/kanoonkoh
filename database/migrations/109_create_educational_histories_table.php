@@ -13,6 +13,7 @@ return new class extends Migration
 
             $table->unsignedBigInteger('user_id');
             $table->unsignedInteger('federation_course_id');
+            $table->string('custom_course_title')->nullable();
 
             $table->date('issue_date')->nullable();
 
@@ -36,6 +37,6 @@ return new class extends Migration
 
     public function down()
     {
-        Schema::dropIfExists('payments');
+        Schema::dropIfExists('educational_histories');
     }
 };

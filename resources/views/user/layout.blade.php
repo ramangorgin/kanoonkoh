@@ -104,6 +104,70 @@
             font-weight: 900;
         }
 
+        /* Header Icon Styling */
+        .header-icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background-color: #f8f9fa; /* light gray bg */
+            color: #222; /* Darker color for better contrast */
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            cursor: pointer;
+            text-decoration: none; /* Remove underline from links */
+        }
+        .header-icon-btn:hover {
+            background-color: #e7f1ff;
+            color: #0d6efd;
+            transform: scale(1.1);
+        }
+        .header-icon-btn i {
+            font-size: 1.6rem;
+            line-height: 1; /* Fix vertical alignment */
+            display: flex;
+        }
+
+        /* Specific styling for sidebar toggle to match icons */
+        .sidebar-toggler-btn {
+            width: 55px;
+            height: 55px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            border: 1px solid #dee2e6;
+            background-color: #fff;
+            color: #222;
+            transition: all 0.3s ease;
+        }
+        .sidebar-toggler-btn:hover {
+            background-color: #e7f1ff;
+            color: #0d6efd;
+            border-color: #0d6efd;
+            transform: scale(1.05);
+        }
+        .sidebar-toggler-btn i {
+            font-size: 1.6rem;
+            line-height: 1;
+            display: flex;
+        }
+
+        /* Notification dot */
+        .notification-dot {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 8px;
+            height: 8px;
+            background-color: #dc3545;
+            border-radius: 50%;
+            border: 1px solid #fff;
+        }
+
         @media (max-width: 991.98px) {
             .dashboard-container {
                 flex-direction: column;
@@ -169,21 +233,41 @@
     </style>
 </head>
 <body>
+@include('partials.preloader')
 <header>
-    <nav class="navbar bg-white shadow-sm py-3 px-4">
-        <div class="container-fluid d-flex align-items-center justify-content-between flex-wrap">
+    <nav class="navbar bg-white shadow-sm py-3 px-3 px-lg-4">
+        <div class="container-fluid d-flex align-items-center justify-content-between">
 
-            <!-- لوگو (همیشه سمت راست) -->
-            <a class="navbar-brand d-flex align-items-center order-1" href="{{ route('home') }}">
-                <img src="{{ asset('images/logo.png') }}" alt="کانون کوه" style="height: 65px;">
-            </a>
+            <!-- Right Side: Logo + Desktop Title -->
+            <div class="d-flex align-items-center gap-3">
+                <a class="navbar-brand d-flex align-items-center m-0" href="{{ route('home') }}">
+                    <img src="{{ asset('images/logo.png') }}" alt="کانون کوه" style="height: 65px;">
+                </a>
+                <!-- Desktop Title -->
+                <span class="d-none d-lg-block fw-bold fs-5 text-dark pe-3">
+                    داشبورد کاربر - سامانه کانون کوه
+                </span>
+            </div>
 
-            <!-- دکمه‌ها (همیشه سمت چپ) -->
-            <div class="d-flex align-items-center gap-3 order-2">
-                <!-- فقط در موبایل: دکمه تاگل سایدبار -->
-                <button class="btn btn-secondary d-inline-block d-lg-none" id="sidebarToggle">
+            <!-- Left Side: Icons + Toggler -->
+            <div class="d-flex align-items-center gap-2 gap-md-3">
+                
+                <!-- Notification Icon -->
+                <a href="#" class="header-icon-btn position-relative" title="اعلانات">
+                    <i class="bi bi-bell"></i>
+                    <span class="notification-dot"></span>
+                </a>
+
+                <!-- Profile Icon -->
+                <a href="{{ route('dashboard.profile.edit') }}" class="header-icon-btn" title="پروفایل">
+                    <i class="bi bi-person-circle"></i>
+                </a>
+
+                <!-- Mobile Sidebar Toggler -->
+                <button class="sidebar-toggler-btn d-lg-none" id="sidebarToggle">
                     <i class="bi bi-list fs-4"></i>
                 </button>
+
             </div>
 
         </div>
@@ -196,11 +280,11 @@
         <a href="{{ route('dashboard.index') }}" class="{{ request()->routeIs('dashboard.index') ? 'active-link' : '' }}">
             <i class="bi bi-house-door-fill me-2"></i> خانه داشبورد
         </a>
-        <a href="{{ route('dashboard.profile.show') }}" class="{{ request()->routeIs('dashboard.profile.show') ? 'active-link' : '' }}">
+        <a href="{{ route('dashboard.profile.edit') }}" class="{{ request()->routeIs('dashboard.profile.edit') ? 'active-link' : '' }}">
             <i class="bi bi-person-lines-fill me-2"></i> ویرایش مشخصات
         </a>
 
-        <a href="{{ route('dashboard.medicalRecord.show') }}" class="{{ request()->routeIs('dashboard.medicalRecord.show') ? 'active-link' : '' }}">
+        <a href="{{ route('dashboard.medicalRecord.edit') }}" class="{{ request()->routeIs('dashboard.medicalRecord.edit') ? 'active-link' : '' }}">
             <i class="bi bi-clipboard2-pulse-fill me-2"></i>  پرونده پزشکی  
         </a>
 
@@ -261,21 +345,83 @@
 <script src="{{ asset('js/jalali-datepicker-init.js') }}"></script>
 <script type="text/javascript" src="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.js"></script>
 
+@stack('modals')
+
+<script>
+// Normalize Persian/Arabic digits to English in inputs/textareas
+(function(){
+    const map = {'۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9',
+                 '٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9'};
+    const pattern = /[۰-۹٠-٩]/g;
+    function normalize(str){ return String(str).replace(pattern, d => map[d] || d); }
+    function bind(el){
+        el.addEventListener('input', e => {
+            const v = e.target.value;
+            if (pattern.test(v)) {
+                const start = e.target.selectionStart, end = e.target.selectionEnd;
+                e.target.value = normalize(v);
+                if (start != null && end != null) e.target.setSelectionRange(start, end);
+            }
+        });
+    }
+    document.addEventListener('DOMContentLoaded', function(){
+        document.querySelectorAll('input, textarea').forEach(bind);
+        new MutationObserver(muts => muts.forEach(m => m.addedNodes.forEach(n => {
+            if (n.nodeType === 1) {
+                if (n.matches && n.matches('input,textarea')) bind(n);
+                n.querySelectorAll?.('input,textarea').forEach(bind);
+            }
+        }))).observe(document.body, {childList:true, subtree:true});
+    });
+})();
+
+// Convert English digits to Persian in rendered text (not in form fields)
+(function(){
+    const map = {'0':'۰','1':'۱','2':'۲','3':'۳','4':'۴','5':'۵','6':'۶','7':'۷','8':'۸','9':'۹'};
+    function toFa(str){ return String(str).replace(/\d/g, d => map[d] || d); }
+    function shouldSkip(node){
+        return node.closest && node.closest('input,textarea,script,style,pre,code');
+    }
+    function walk(node){
+        if (node.nodeType === 3) { // text
+            if (!shouldSkip(node)) node.nodeValue = toFa(node.nodeValue);
+            return;
+        }
+        if (node.nodeType === 1 && !['INPUT','TEXTAREA','SCRIPT','STYLE'].includes(node.tagName)) {
+            node.childNodes.forEach(walk);
+        }
+    }
+    document.addEventListener('DOMContentLoaded', () => walk(document.body));
+})();
+</script>
+
 
 <script>AOS.init();</script>
 
 {{-- نقشه و تاریخ --}}
 <script>
     // سال شمسی به فارسی
-    const date = new persianDate();
-    document.getElementById('shamsi-year').innerText = date.year().toString().replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
-
-    // نقشه
-    var map = L.map('map').setView([35.8232941, 50.9331318], 16);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-    L.marker([35.8232941, 50.9331318]).addTo(map);
+    (function(){
+        try {
+            const el = document.getElementById('shamsi-year');
+            if (el) {
+                const now = new Date();
+                const year = new Intl.DateTimeFormat('fa-IR-u-nu-latn', { year: 'numeric' }).format(now);
+                el.innerText = year.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+            }
+        } catch (e) {}
+    })();
+    // نقشه (در صورت وجود المنت نقشه)
+    (function(){
+        const mapEl = document.getElementById('map');
+        if (mapEl && window.L) {
+            var map = L.map('map').setView([35.8232941, 50.9331318], 16);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+            L.marker([35.8232941, 50.9331318]).addTo(map);
+        }
+    })();
 </script>    
 
 

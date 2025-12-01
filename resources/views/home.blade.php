@@ -19,7 +19,7 @@
 
     <div class="hero-content text-center text-white">
         <img src="{{ asset('images/logo-white.png') }}" class="rounded-circle shadow mb-4" style="width: 120px; height: 120px; object-fit: cover;" alt="کانون کوه">
-        <h2 class="fw-bold mb-2">باشگاه کوهنوردی دوستداران قله‌ها و طبیعت</h2>
+        <h2 class="fw-bold mb-2 ">باشگاه کوهنوردی دوستداران قله‌ها و طبیعت</h2>
         <h4 class="mb-4">(کانون کوه)</h4>
         <a href="{{ route('conditions') }}" class="btn btn-primary px-4 mt-2 ms-2">شرایط عضویت</a>
         <a href="{{ route('auth.phone') }}" class="btn btn-outline-light mt-2 px-4">ثبت‌نام در باشگاه</a>

@@ -48,32 +48,48 @@ if (! function_exists('toPersianDate')) {
             <h4 class="mb-3">ویرایش پرونده پزشکی</h4>
 
             @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
+                <div class="alert alert-success d-none">{{ session('success') }}</div>
+            @endif
+            @if ($errors->any())
+                <div class="alert alert-danger d-none">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
             @endif
 
-            <form method="POST" action="{{ route('dashboard.medicalRecord.update') }}" enctype="multipart/form-data" class="row g-3">
+            <div id="client-errors-medical" class="alert alert-danger d-none"></div>
+            <form id="medical-form" method="POST" action="{{ route('dashboard.medicalRecord.update') }}" enctype="multipart/form-data" class="row g-3">
                 @csrf
                 @method('PUT')
 
                 <div class="col-md-6">
                     <label class="form-label"><i class="bi bi-calendar-event"></i> تاریخ صدور بیمه ورزشی</label>
-                    <input type="text" id="insurance_issue_date" name="insurance_issue_date"
-                        class="form-control"
-                        value="{{ old('insurance_issue_date', toPersianDate($medical->insurance_issue_date ?? null)) }}">
+                    <div class="input-group">
+                        <input type="text" id="insurance_issue_date" name="insurance_issue_date" data-jdp
+                            class="form-control"
+                            value="{{ old('insurance_issue_date', toPersianDate($medical->insurance_issue_date ?? null)) }}">
+                        <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                    </div>
                     <small class="form-text text-muted">تاریخ شروع پوشش بیمه (شمسی)</small>
                 </div>
 
                 <div class="col-md-6">
                     <label class="form-label"><i class="bi bi-calendar-check"></i> تاریخ اعتبار بیمه ورزشی</label>
-                    <input type="text" id="insurance_expiry_date" name="insurance_expiry_date"
-                        class="form-control"
-                        value="{{ old('insurance_expiry_date', toPersianDate($medical->insurance_expiry_date ?? null)) }}">
+                    <div class="input-group">
+                        <input type="text" id="insurance_expiry_date" name="insurance_expiry_date" data-jdp
+                            class="form-control"
+                            value="{{ old('insurance_expiry_date', toPersianDate($medical->insurance_expiry_date ?? null)) }}">
+                        <span class="input-group-text"><i class="bi bi-calendar"></i></span>
+                    </div>
                     <small class="form-text text-muted">تا چه تاریخی بیمه معتبر است</small>
                 </div>
 
                 <div class="col-md-12">
                     <label class="form-label"><i class="bi bi-file-earmark-medical"></i> فایل بیمه ورزشی</label>
-                    <input type="file" class="form-control" name="insurance_file" accept="image/*,application/pdf">
+                    <input type="file" class="filepond" name="insurance_file" accept="image/*,application/pdf">
                     <small class="form-text text-muted">اسکن یا عکس بیمه ورزشی (JPEG/PNG/PDF)</small>
                     @if(!empty($medical->insurance_file))
                         <div class="mt-2">
@@ -129,20 +145,20 @@ if (! function_exists('toPersianDate')) {
                         <div class="form-check form-check-inline">
                             <input class="form-check-input toggle-explain" type="radio"
                                    name="{{ $name }}" value="1" id="{{ $name }}_yes"
-                                   {{ old($name, $medical->{$name} ?? null) === 1 ? 'checked' : '' }}>
+                                   {{ old($name, $medical->{$name} ?? null) == 1 ? 'checked' : '' }}>
                             <label class="form-check-label" for="{{ $name }}_yes">بله</label>
                         </div>
                         <div class="form-check form-check-inline">
                             <input class="form-check-input toggle-explain" type="radio"
                                    name="{{ $name }}" value="0" id="{{ $name }}_no"
-                                   {{ old($name, $medical->{$name} ?? null) === 0 ? 'checked' : '' }}>
+                                   {{ old($name, $medical->{$name} ?? null) == 0 ? 'checked' : '' }}>
                             <label class="form-check-label" for="{{ $name }}_no">خیر</label>
                         </div>
                     </div>
                     <textarea class="form-control mt-2 explain-field"
                               name="{{ $name }}_details"
                               placeholder="توضیحات..."
-                              style="{{ (old($name, $medical->{$name} ?? null) === 1) ? '' : 'display:none;' }}">{{ old($name.'_details', $medical->{$name.'_details'} ?? '') }}</textarea>
+                              style="{{ (old($name, $medical->{$name} ?? null)) ? '' : 'display:none;' }}">{{ old($name.'_details', $medical->{$name.'_details'} ?? '') }}</textarea>
                     <small class="form-text text-muted">در صورت «بله»، موارد و تاریخچه را وارد کنید (مثلاً تاریخ جراحی)</small>
                 </div>
                 @endforeach
@@ -154,20 +170,20 @@ if (! function_exists('toPersianDate')) {
                 </div>
 
                 <div class="col-12 mt-2">
-                    <div class="form-check">
+                    <div class="form-check d-flex align-items-center gap-2">
                         <input type="hidden" name="commitment_signed" value="0">
-                        <input type="checkbox" name="commitment_signed" value="1"
+                        <input type="checkbox" id="commitment_signed" class="form-check-input" name="commitment_signed" value="1"
                                {{ old('commitment_signed', $medical->commitment_signed ?? false) ? 'checked' : '' }}>
-                        <label class="form-check-label">
+                        <label class="form-check-label mb-0" for="commitment_signed">
+                            <span class="text-danger">*</span>
                             ضمن تأیید مطالب فوق، مسئولیت ناشی از تمامی پیش‌آمدهای ممکن برای خود در برنامه را می‌پذیرم.
                         </label>
-                        <small class="form-text text-muted">برای ادامه لازم است این تائید را بزنید</small>
                     </div>
                 </div>
 
                 <div class="col-12 mt-3 text-end">
-                    <button type="submit" class="btn btn-success px-4 py-2">
-                        ذخیره و رفتن به مرحله بعد
+                    <button type="submit" id="medical-submit" class="btn btn-success px-4 py-2" {{ old('commitment_signed', $medical->commitment_signed ?? false) ? '' : 'disabled' }}>
+                        {{ session('onboarding') ? 'ذخیره و رفتن به مرحله بعد' : 'ذخیره تغییرات' }}
                     </button>
                 </div>
             </form>
@@ -183,19 +199,12 @@ if (! function_exists('toPersianDate')) {
 
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/persian-date@1.0.6/dist/persian-date.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
 
 <script>
 $(document).ready(function() {
-    $("#insurance_issue_date, #insurance_expiry_date").each(function(){
-        $(this).persianDatepicker({
-            format: 'YYYY/MM/DD',
-            initialValueType: 'persian',
-            autoClose: true,
-            calendar: { persian: { locale: 'fa' } }
-        });
-    });
+    if (window.jalaliDatepicker && jalaliDatepicker.startWatch) {
+        jalaliDatepicker.startWatch({ persianDigits: true });
+    }
 
     $('.toggle-explain').on('change', function() {
         const parent = $(this).closest('.col-md-6');
@@ -205,6 +214,126 @@ $(document).ready(function() {
             parent.find('.explain-field').hide().val('');
         }
     });
+
+    // Enable/disable submit based on commitment checkbox
+    const checkbox = document.getElementById('commitment_signed');
+    const submitBtn = document.getElementById('medical-submit');
+    if (checkbox && submitBtn) {
+        const sync = () => { submitBtn.disabled = !checkbox.checked; };
+        checkbox.addEventListener('change', sync);
+        sync();
+    }
+
+    // Basic client-side validation
+    const form = document.getElementById('medical-form');
+    const errorBox = document.getElementById('client-errors-medical');
+    function showErrors(errors){
+        if (!errors.length) { errorBox.classList.add('d-none'); errorBox.innerHTML=''; return; }
+        errorBox.classList.remove('d-none');
+        errorBox.innerHTML = '<ul class="mb-0">' + errors.map(e=>'<li>'+e+'</li>').join('') + '</ul>';
+        window.scrollTo({ top: form.getBoundingClientRect().top + window.scrollY - 120, behavior: 'smooth' });
+    }
+    form?.addEventListener('submit', function(e){
+        const errs = [];
+        const h = form.querySelector('[name="height"]')?.value?.trim();
+        const w = form.querySelector('[name="weight"]')?.value?.trim();
+        const issue = form.querySelector('[name="insurance_issue_date"]')?.value?.trim();
+        const exp   = form.querySelector('[name="insurance_expiry_date"]')?.value?.trim();
+        const commit = document.getElementById('commitment_signed')?.checked;
+        if (h && (+h < 50 || +h > 250)) errs.push('قد باید بین ۵۰ تا ۲۵۰ سانتی‌متر باشد.');
+        if (w && (+w < 20 || +w > 250)) errs.push('وزن باید بین ۲۰ تا ۲۵۰ کیلوگرم باشد.');
+        if (issue && !/^\d{4}\/\d{2}\/\d{2}$/.test(issue)) errs.push('فرمت تاریخ صدور بیمه صحیح نیست.');
+        if (exp && !/^\d{4}\/\d{2}\/\d{2}$/.test(exp)) errs.push('فرمت تاریخ انقضاء بیمه صحیح نیست.');
+        if (!commit) errs.push('پذیرش تعهدنامه الزامی است.');
+        if (errs.length){
+            e.preventDefault();
+            if (window.toastr) errs.forEach(m => toastr.error(m));
+            else showErrors(errs);
+        }
+    });
+
+    // FilePond (nice file upload)
+    (function(){
+        if (!document.querySelector('link[href*="filepond.min.css"]')) {
+            const css = document.createElement('link');
+            css.rel = 'stylesheet';
+            css.href = 'https://unpkg.com/filepond@^4/dist/filepond.min.css';
+            document.head.appendChild(css);
+        }
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/filepond@^4/dist/filepond.min.js';
+        script.onload = function(){
+            FilePond.setOptions({
+                labelIdle: 'فایل خود را اینجا رها کنید یا <span class="filepond--label-action">برای آپلود کلیک کنید</span>',
+            });
+            document.querySelectorAll('.filepond').forEach(el => FilePond.create(el, { credits:false }));
+        };
+        document.body.appendChild(script);
+    })();
+
+    // Toastr (snackbar) include and setup
+    (function(){
+        if (!document.querySelector('link[href*="toastr.min.css"]')) {
+            const l = document.createElement('link');
+            l.rel = 'stylesheet';
+            l.href = 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css';
+            document.head.appendChild(l);
+        }
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js';
+        s.onload = function(){
+            toastr.options = {
+                closeButton: true,
+                progressBar: true,
+                positionClass: 'toast-bottom-center',
+                timeOut: 6000,
+                rtl: true,
+            };
+            @if(session('success'))
+                toastr.success(@json(session('success')));
+            @endif
+            @if ($errors->any())
+                @foreach ($errors->all() as $error)
+                    toastr.error(@json($error));
+                @endforeach
+            @endif
+        };
+        document.body.appendChild(s);
+    })();
+});
+document.addEventListener('DOMContentLoaded', function () {
+    @if(session('onboarding'))
+    const modalEl = document.getElementById('onboardingMedicalModal');
+    if (modalEl) {
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+    @endif
 });
 </script>
+@endpush
+
+@push('modals')
+<div class="modal fade" id="onboardingMedicalModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">مرحله ۲ از ۳ — پرونده پزشکی</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                لطفاً اطلاعات سلامت و بیمه ورزشی خود را وارد کنید:
+                <ul class="mt-2 mb-0">
+                    <li>تاریخ صدور و اعتبار بیمه ورزشی و فایل آن</li>
+                    <li>گروه خونی، قد و وزن</li>
+                    <li>پاسخ به چند سؤال پزشکی (در صورت «بله»، توضیح کوتاه)</li>
+                    <li>تأیید تعهدنامه برای ادامه مراحل</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">متوجه شدم</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endpush
