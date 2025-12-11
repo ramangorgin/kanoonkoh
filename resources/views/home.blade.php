@@ -118,10 +118,6 @@
 @push('styles')
 <style>
 
-    p , h1, h2, h3, h4 , h5{
-        font-family: 'Sahel', sans-serif;
-    }
-
 @media (max-width: 768px) {
     .hero-slider {
         height: 80vh;

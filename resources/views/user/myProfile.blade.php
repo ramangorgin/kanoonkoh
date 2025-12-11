@@ -8,11 +8,7 @@
 
 @push('styles')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-<link rel="stylesheet" href="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css">
 <style>
-    .jalali-datepicker { z-index: 2000 !important; }
-    .jalali-datepicker .jalali-datepicker-legend { z-index: 2001 !important; }
-    .jalali-datepicker-portal { z-index: 2000 !important; }
     
     /* File input styling */
     .file-input-wrapper {
@@ -271,6 +267,9 @@ if (! function_exists('toPersianDate')) {
 @endsection
 
 @push('scripts')
+<script>
+        jalaliDatepicker.startWatch({ persianDigits: true });
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
 <script>
@@ -359,11 +358,6 @@ if (! function_exists('toPersianDate')) {
 
     // DOM Ready
     document.addEventListener('DOMContentLoaded', function () {
-        // Initialize Jalali datepicker
-        if (window.jalaliDatepicker && jalaliDatepicker.startWatch) {
-            jalaliDatepicker.startWatch({ persianDigits: true });
-        }
-
         // Setup all file inputs
         document.querySelectorAll('.file-upload-input').forEach(setupFileInput);
 

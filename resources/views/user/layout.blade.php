@@ -15,22 +15,105 @@
     <!-- Fonts -->
     <link href="{{ asset('css/fonts.css') }}" rel="stylesheet">
 
+    <!-- JalaliDatePicker - Load before Bootstrap to ensure proper styling -->
+    <link rel="stylesheet" href="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css">
+
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
+
 
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
-
-    <!-- JalaliDatePicker -->
-    <link rel="stylesheet" href="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css">
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     @stack('styles')
     <style>
+        /* Jalali Datepicker Z-Index Fix - Must be before font rules */
+        .jalali-datepicker { 
+            z-index: 10000 !important; 
+        }
+        
+        /* Ensure fonts apply to all elements - loaded after Bootstrap to override */
+        /* This style block loads after Bootstrap CSS, so it will override Bootstrap's font settings */
+        
+        /* Headings */
+        h1, h2, h3, h4, h5, h6,
+        .h1, .h2, .h3, .h4, .h5, .h6,
+        .navbar-brand {
+            font-family: 'Modam', 'Peyda', sans-serif !important;
+        }
+        
+
+        
+
+        
+        /* Buttons - all variants */
+        .btn, 
+        button, 
+        [type="button"], 
+        [type="submit"], 
+        [type="reset"],
+        .btn-primary,
+        .btn-secondary,
+        .btn-success,
+        .btn-danger,
+        .btn-warning,
+        .btn-info,
+        .btn-light,
+        .btn-dark,
+        .btn-outline-primary,
+        .btn-outline-secondary,
+        .btn-outline-success,
+        .btn-outline-danger,
+        .btn-outline-warning,
+        .btn-outline-info,
+        .btn-outline-light,
+        .btn-outline-dark,
+        .btn-sm,
+        .btn-lg {
+            font-family: 'Peyda', sans-serif !important;
+        }
+        
+        /* Dashboard specific */
+        .sidebar, .sidebar a, .sidebar button,
+        .main-content,
+        .active-link,
+        #userpanel,
+        .header-icon-btn,
+        .sidebar-toggler-btn {
+            font-family: 'Peyda', sans-serif !important;
+        }
+        
+        /* Cards */
+        .card, .card-header, .card-body, .card-footer, .card-title {
+            font-family: 'Peyda', sans-serif !important;
+        }
+        
+        /* Forms */
+        input, 
+        select, 
+        textarea, 
+        .form-control, 
+        .form-select, 
+        .form-label, 
+        .form-check-label,
+        .input-group-text {
+            font-family: 'Peyda', sans-serif !important;
+        }
+        
+        /* Other Bootstrap components */
+        .alert, .badge, .breadcrumb,
+        .table, .table th, .table td,
+        .nav-link, .dropdown-menu, .dropdown-item,
+        .list-group, .list-group-item {
+            font-family: 'Peyda', sans-serif !important;
+        }
+        
+
 
         body {
             margin: 0;
@@ -304,7 +387,7 @@
             <form method="POST" action="{{ route('logout') }}" style="margin:0;">
                 @csrf
                 <button type="submit"
-                    style="display:block; width:100%; text-align:right; padding:10px 15px; margin-bottom:10px; border-radius:5px; color:#212529; background-color:#f8f9fa; border:0; font-family: inherit;"
+                    style="display:block; width:100%; text-align:right; padding:10px 15px; margin-bottom:10px; border-radius:5px; color:#212529; background-color:#f8f9fa; border:0;"
                     class="{{ request()->routeIs('logout') ? 'active-link' : '' }}">
                     <i class="bi bi-box-arrow-right me-2"></i> خروج
                 </button>
@@ -342,7 +425,6 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-<script src="{{ asset('js/jalali-datepicker-init.js') }}"></script>
 <script type="text/javascript" src="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.js"></script>
 
 @stack('modals')

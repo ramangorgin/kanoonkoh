@@ -134,7 +134,7 @@
 
 
                 {{-- ستون ۳: لینک‌ها --}}
-                <div class="col-md-3 font-sahel text-center">
+                <div class="col-md-3 text-center">
                     <h5 class="fw-bold mb-3">لینک‌های مهم</h5>
                     <ul class="list-unstyled fs-6 m-0 p-0 d-flex flex-column align-items-center">
                         <li class="mb-4 mt-4 w-100"><a href="{{ route('courses.archive') }}" class="text-light text-decoration-none d-inline-block w-100">آخرین دوره‌ها</a></li>

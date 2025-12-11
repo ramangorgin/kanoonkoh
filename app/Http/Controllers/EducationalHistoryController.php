@@ -107,10 +107,12 @@ class EducationalHistoryController extends Controller
                 }
                 // file
                 $filePath = null;
-                $file = $request->file("courses.$index.certificate_file");
+                $file = data_get($request->allFiles(), "courses.$index.certificate_file");
+
                 if ($file) {
                     $filePath = $file->store('educational_certificates', 'public');
                 }
+   
                 EducationalHistory::create([
                     'user_id'             => $user->id,
                     'federation_course_id'=> !empty($courseData['federation_course_id']) && $courseData['federation_course_id'] !== '_custom' ? (int) $courseData['federation_course_id'] : null,
@@ -163,6 +165,14 @@ class EducationalHistoryController extends Controller
             ->where('user_id', Auth::id())
             ->firstOrFail();
 
+        // Normalize _custom sentinel to null for validation
+        if ($request->input('federation_course_id') === '_custom') {
+            $request->merge(['federation_course_id' => null]);
+        }
+        if ($request->has('custom_course_title')) {
+            $request->merge(['custom_course_title' => trim((string)$request->input('custom_course_title'))]);
+        }
+
         $request->validate([
             'federation_course_id' => 'nullable|exists:federation_courses,id|required_without:custom_course_title',
             'custom_course_title'  => 'nullable|string|max:255|required_without:federation_course_id',
@@ -192,8 +202,8 @@ class EducationalHistoryController extends Controller
         }
 
         $history->update([
-            'federation_course_id' => $request->federation_course_id ?: null,
-            'custom_course_title'  => $request->custom_course_title ? trim($request->custom_course_title) : null,
+            'federation_course_id' => !empty($request->federation_course_id) && $request->federation_course_id !== '_custom' ? (int) $request->federation_course_id : null,
+            'custom_course_title'  => !empty($request->custom_course_title) ? trim($request->custom_course_title) : null,
             'issue_date'           => $issueDate,
             'certificate_file'     => $filePath ?? $history->certificate_file,
         ]);

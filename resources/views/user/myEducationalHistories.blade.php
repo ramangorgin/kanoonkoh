@@ -4,7 +4,6 @@
 
 @push('styles')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
-<link rel="stylesheet" href="https://unpkg.com/@majidh1/jalalidatepicker/dist/jalalidatepicker.min.css">
 <style>
     /* Ensure Jalali datepicker renders over Bootstrap modals */
     .jalali-datepicker { z-index: 200000 !important; }
@@ -416,11 +415,6 @@ $federationCourses = $federationCourses ?? collect();
 
     // DOM Ready
     document.addEventListener('DOMContentLoaded', function () {
-        // Initialize Jalali datepicker
-        if (window.jalaliDatepicker && jalaliDatepicker.startWatch) {
-            jalaliDatepicker.startWatch({ persianDigits: true });
-        }
-
         // Setup existing rows
         document.querySelectorAll('.course-item, .card-body').forEach(setupRowLogic);
         
@@ -447,14 +441,27 @@ $federationCourses = $federationCourses ?? collect();
             modal.show();
         }
         @endif
-
-        // --- Dynamic Add Row ---
+        // --- Dynamic Add Row (SAFE INDEX VERSION) ---
         (function(){
             const list = document.getElementById('courses-list');
             const addBtn = document.getElementById('add-course-row');
-            
-            let idx = list ? list.querySelectorAll('.course-item').length : 1;
-            if (idx === 0) idx = 1;
+
+            // Function to detect the TRUE highest existing index
+            function getNextIndex() {
+                let maxIndex = -1;
+
+                document.querySelectorAll('input[name^="courses["]').forEach(input => {
+                    const match = input.name.match(/courses\[(\d+)\]/);
+                    if (match) {
+                        const num = parseInt(match[1]);
+                        if (!isNaN(num)) maxIndex = Math.max(maxIndex, num);
+                    }
+                });
+
+                return maxIndex + 1; // next safe index
+            }
+
+            let idx = getNextIndex();
 
             const template = (i) => `
                 <div class="course-item row g-3 align-items-end border rounded p-2 mb-3">
@@ -468,10 +475,12 @@ $federationCourses = $federationCourses ?? collect();
                             <option value="_custom">سایر (دوره سفارشی)</option>
                         </select>
                     </div>
+
                     <div class="col-md-4 custom-course-wrap" style="display:none;">
                         <label class="form-label">نام دوره سفارشی <span class="text-danger">*</span></label>
                         <input type="text" name="courses[${i}][custom_course_title]" class="form-control" placeholder="نام دوره">
                     </div>
+
                     <div class="col-md-3">
                         <label class="form-label">تاریخ صدور مدرک</label>
                         <div class="input-group">
@@ -479,6 +488,7 @@ $federationCourses = $federationCourses ?? collect();
                             <span class="input-group-text"><i class="bi bi-calendar"></i></span>
                         </div>
                     </div>
+
                     <div class="col-12 mt-2 mb-3">
                         <label class="form-label">فایل مدرک (اختیاری - حداکثر ۲ مگابایت)</label>
                         <div class="file-input-wrapper">
@@ -487,23 +497,28 @@ $federationCourses = $federationCourses ?? collect();
                             <div class="file-error"></div>
                         </div>
                     </div>
+
                     <div class="col-md-1 text-end">
-                        <button type="button" class="btn btn-outline-danger remove-course" title="حذف"><i class="bi bi-x-lg"></i></button>
+                        <button type="button" class="btn btn-outline-danger remove-course" title="حذف">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
                     </div>
                 </div>`;
 
             if (addBtn) {
-                addBtn.addEventListener('click', function(){
+                addBtn.addEventListener('click', function() {
+                    idx = getNextIndex(); // recalc every time
+
                     const div = document.createElement('div');
                     div.innerHTML = template(idx);
                     const newItem = div.firstElementChild;
+
                     list.appendChild(newItem);
-                    idx++;
-                    
-                    if (window.jalaliDatepicker && jalaliDatepicker.startWatch) {
+
+                    if (window.jalaliDatepicker?.startWatch) {
                         jalaliDatepicker.startWatch({ persianDigits: true });
                     }
-                    
+
                     setupRowLogic(newItem);
                 });
             }
@@ -514,68 +529,15 @@ $federationCourses = $federationCourses ?? collect();
                         const item = e.target.closest('.course-item');
                         if (item && list.children.length > 1) {
                             item.remove();
-                            // re-sync locks
+
                             const s = document.querySelector('.select-course'); 
-                            if(s) s.dispatchEvent(new Event('change'));
+                            if (s) s.dispatchEvent(new Event('change'));
                         }
                     }
                 });
             }
         })();
 
-        // Basic client-side validation for multi add
-        (function(){
-            const form = document.getElementById('multi-course-form');
-            const errorBox = document.getElementById('client-errors-edu');
-            
-            function showErrors(errors){
-                if (!errors.length) { 
-                    errorBox.classList.add('d-none'); 
-                    errorBox.innerHTML=''; 
-                    return; 
-                }
-                errorBox.classList.remove('d-none');
-                errorBox.innerHTML = '<ul class="mb-0">' + errors.map(e=>'<li>'+e+'</li>').join('') + '</ul>';
-                window.scrollTo({ top: form.getBoundingClientRect().top + window.scrollY - 120, behavior: 'smooth' });
-            }
-            
-            if (form) {
-                form.addEventListener('submit', function(e){
-                    const errs = [];
-                    const items = form.querySelectorAll('.course-item');
-                    
-                    items.forEach((item, i) => {
-                        const sel = item.querySelector('.select-course');
-                        const custom = item.querySelector('.custom-course-wrap input');
-                        const date = item.querySelector('input[name^="courses"][name$="[issue_date]"]')?.value?.trim() || '';
-                        const selVal = sel?.value || '';
-                        const customVal = custom?.value?.trim() || '';
-                        
-                        if ((selVal === '' || selVal === '_custom') && customVal.length < 3) {
-                            errs.push(`ردیف ${i+1}: نام دوره سفارشی را حداقل با ۳ کاراکتر وارد کنید یا یک دوره از فهرست انتخاب کنید.`);
-                        }
-                        if (date && !/^\d{4}\/\d{2}\/\d{2}$/.test(date)) {
-                            errs.push(`ردیف ${i+1}: فرمت تاریخ صحیح نیست (YYYY/MM/DD).`);
-                        }
-                        
-                        // Check file size
-                        const fileInput = item.querySelector('.certificate-file-input');
-                        if (fileInput && fileInput.files && fileInput.files.length > 0) {
-                            const file = fileInput.files[0];
-                            if (file.size > MAX_FILE_SIZE) {
-                                errs.push(`ردیف ${i+1}: حجم فایل بیشتر از ${MAX_FILE_SIZE_MB} مگابایت است.`);
-                            }
-                        }
-                    });
-                    
-                    if (errs.length){ 
-                        e.preventDefault(); 
-                        errs.forEach(m => toastr.error(m));
-                        showErrors(errs);
-                    }
-                });
-            }
-        })();
     });
 })();
 </script>

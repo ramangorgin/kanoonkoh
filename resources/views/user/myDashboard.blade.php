@@ -99,7 +99,7 @@
                 <img src="{{ $userPhoto }}" alt="عکس کاربر" class="img-thumbnail me-3" style="width: 120px; height: 120px; object-fit: cover;">
 
                 <div>
-                    <h5 style="font-family: Vazirmatn;" class="mb-3">
+                    <h5 class="mb-3">
                         {{ optional($user->profile)->first_name ?? '' }} {{ optional($user->profile)->last_name ?? '' }}
                     </h5>
                     <small class="text-muted mb-2">
